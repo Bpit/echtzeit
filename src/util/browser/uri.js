@@ -1,78 +1,78 @@
 echtzeit.URI = echtzeit.extend(echtzeit.Class({
-  queryString: function() {
-    var pairs = [];
-    for (var key in this.params) {
-      if (!this.params.hasOwnProperty(key)) continue;
-      pairs.push(encodeURIComponent(key) + '=' + encodeURIComponent(this.params[key]));
-    }
-    return pairs.join('&');
-  },
+                        queryString: function() {
+                                var pairs = [];
+                                for (var key in this.params) {
+                                        if (!this.params.hasOwnProperty(key)) continue;
+                                        pairs.push(encodeURIComponent(key) + '=' + encodeURIComponent(this.params[key]));
+                                }
+                                return pairs.join('&');
+                        },
 
-  isSameOrigin: function() {
-    var host = echtzeit.URI.parse(echtzeit.ENV.location.href, false);
+                        isSameOrigin: function() {
+                                var host = echtzeit.URI.parse(echtzeit.ENV.location.href, false);
 
-    var external = (host.hostname !== this.hostname) ||
-                   (host.port !== this.port) ||
-                   (host.protocol !== this.protocol);
+                                var external = (host.hostname !== this.hostname) ||
+                                (host.port !== this.port) ||
+                                (host.protocol !== this.protocol);
 
-    return !external;
-  },
+                                return !external;
+                        },
 
-  toURL: function() {
-    var query = this.queryString();
-    return this.protocol + '//' + this.hostname + (this.port ? ':' + this.port : '') +
-           this.pathname + (query ? '?' + query : '') + this.hash;
-  }
-}), {
-  parse: function(url, params) {
-    if (typeof url !== 'string') return url;
-    var uri = new this(), parts;
+                        toURL: function() {
+                                var query = this.queryString();
+                                return this.protocol + '//' + this.hostname + (this.port ? ':' + this.port : '') +
+                                        this.pathname + (query ? '?' + query : '') + this.hash;
+                        }
+                }), {
+                parse: function(url, params) {
+                        if (typeof url !== 'string') return url;
+                        var uri = new this(),
+                                parts;
 
-    var consume = function(name, pattern, infer) {
-      url = url.replace(pattern, function(match) {
-        uri[name] = match;
-        return '';
-      });
-      if (uri[name] === undefined)
-        uri[name] = infer ? echtzeit.ENV.location[name] : '';
-    };
+                        var consume = function(name, pattern, infer) {
+                                url = url.replace(pattern, function(match) {
+                                                uri[name] = match;
+                                                return '';
+                                        });
+                                if (uri[name] === undefined)
+                                        uri[name] = infer ? echtzeit.ENV.location[name] : '';
+                        };
 
-    consume('protocol', /^https?\:/,    true);
-    consume('host',     /^\/\/[^\/]+/,  true);
+                        consume('protocol', /^https?\:/, true);
+                        consume('host', /^\/\/[^\/]+/, true);
 
-    if (!/^\//.test(url)) url = echtzeit.ENV.location.pathname.replace(/[^\/]*$/, '') + url;
-    consume('pathname', /^\/[^\?#]*/);
-    consume('search',   /^\?[^#]*/);
-    consume('hash',     /^#.*/);
+                        if (!/^\//.test(url)) url = echtzeit.ENV.location.pathname.replace(/[^\/]*$/, '') + url;
+                        consume('pathname', /^\/[^\?#]*/);
+                        consume('search', /^\?[^#]*/);
+                        consume('hash', /^#.*/);
 
-    if (/^\/\//.test(uri.host)) {
-      uri.host = uri.host.substr(2);
-      parts = uri.host.split(':');
-      uri.hostname = parts[0];
-      uri.port = parts[1] || '';
-    } else {
-      uri.hostname = echtzeit.ENV.location.hostname;
-      uri.port = echtzeit.ENV.location.port;
-    }
+                        if (/^\/\//.test(uri.host)) {
+                                uri.host = uri.host.substr(2);
+                                parts = uri.host.split(':');
+                                uri.hostname = parts[0];
+                                uri.port = parts[1] || '';
+                        } else {
+                                uri.hostname = echtzeit.ENV.location.hostname;
+                                uri.port = echtzeit.ENV.location.port;
+                        }
 
-    if (params === false) {
-      uri.params = {};
-    } else {
-      var query = uri.search.replace(/^\?/, ''),
-          pairs = query ? query.split('&') : [],
-          n     = pairs.length,
-          data  = {};
+                        if (params === false) {
+                                uri.params = {};
+                        } else {
+                                var query = uri.search.replace(/^\?/, ''),
+                                        pairs = query ? query.split('&') : [],
+                                        n = pairs.length,
+                                        data = {};
 
-      while (n--) {
-        parts = pairs[n].split('=');
-        data[decodeURIComponent(parts[0] || '')] = decodeURIComponent(parts[1] || '');
-      }
-      if (typeof params === 'object') echtzeit.extend(data, params);
+                                while (n--) {
+                                        parts = pairs[n].split('=');
+                                        data[decodeURIComponent(parts[0] || '')] = decodeURIComponent(parts[1] || '');
+                                }
+                                if (typeof params === 'object') echtzeit.extend(data, params);
 
-      uri.params = data;
-    }
+                                uri.params = data;
+                        }
 
-    return uri;
-  }
-});
-
+                        return uri;
+                }
+        });

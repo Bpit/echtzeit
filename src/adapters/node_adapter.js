@@ -10,19 +10,19 @@ var crypto = require('crypto'),
 echtzeit.WebSocket = require('echtzeit-websocket');
 echtzeit.EventSource = echtzeit.WebSocket.EventSource;
 echtzeit.CookieJar = require('cookiejar').CookieJar;
-echtzeit.withDataFor = function (transport, callback, context) {
+echtzeit.withDataFor = function(transport, callback, context) {
         var data = '';
         transport.setEncoding('utf8');
-        transport.addListener('data', function (chunk) {
+        transport.addListener('data', function(chunk) {
                         data += chunk
                 });
-        transport.addListener('end', function () {
+        transport.addListener('end', function() {
                         callback.call(context, data);
                 });
 };
 echtzeit.NodeAdapter = echtzeit.Class({
                 DEFAULT_ENDPOINT: '/bayeux',
-                SCRIPT_PATH: 'echtzeit-browser-min.js',
+                SCRIPT_PATH: 'echtzeit.client.js',
                 CIPHER_ORDER: 'ECDHE-RSA-AES256-SHA384:AES256-SHA256:RC4-SHA:RC4:HIGH:!MD5:!aNULL:!EDH:!AESGCM',
                 CIPHER_OPTIONS: require('constants').SSL_OP_CIPHER_SERVER_PREFERENCE,
                 TYPE_JSON: {
@@ -34,12 +34,12 @@ echtzeit.NodeAdapter = echtzeit.Class({
                 TYPE_TEXT: {
                         'Content-Type': 'text/plain; charset=utf-8'
                 },
-                initialize: function (options) {
+                initialize: function(options) {
                         this._options = options || {};
                         this._endpoint = this._options.mount || this.DEFAULT_ENDPOINT;
                         this._endpointRe = new RegExp('^' + this._endpoint.replace(/\/$/, '') + '(/[^/]+)*(\\.[^\\.]+)?$');
                         this._server = new echtzeit.Server(this._options);
-                        this._static = new echtzeit.StaticServer(path.dirname(__filename) + '/../browser', /\.(?:js|map)$/);
+                        this._static = new echtzeit.StaticServer(path.dirname(__filename) + '/client', /\.(?:js|map)$/);
                         this._static.map(path.basename(this._endpoint) + '.js', this.SCRIPT_PATH);
                         this._static.map('client.js', this.SCRIPT_PATH);
                         var extensions = this._options.extensions;
@@ -48,22 +48,22 @@ echtzeit.NodeAdapter = echtzeit.Class({
                         for (var i = 0, n = extensions.length; i < n; i++)
                                 this.addExtension(extensions[i]);
                 },
-                addExtension: function (extension) {
+                addExtension: function(extension) {
                         return this._server.addExtension(extension);
                 },
-                removeExtension: function (extension) {
+                removeExtension: function(extension) {
                         return this._server.removeExtension(extension);
                 },
-                bind: function () {
+                bind: function() {
                         return this._server._engine.bind.apply(this._server._engine, arguments);
                 },
-                unbind: function () {
+                unbind: function() {
                         return this._server._engine.unbind.apply(this._server._engine, arguments);
                 },
-                getClient: function () {
+                getClient: function() {
                         return this._client = this._client || new echtzeit.Client(this._server);
                 },
-                listen: function (port, sslOptions, callback, context) {
+                listen: function(port, sslOptions, callback, context) {
                         var ssl = sslOptions && sslOptions.cert ? {
                                 key: fs.readFileSync(sslOptions.key),
                                 cert: fs.readFileSync(sslOptions.cert),
@@ -71,48 +71,48 @@ echtzeit.NodeAdapter = echtzeit.Class({
                                 secureOptions: this.CIPHER_OPTIONS
                         } : null;
                         if (ssl && sslOptions.ca)
-                                ssl.ca = echtzeit.map(sslOptions.ca, function (ca) {
+                                ssl.ca = echtzeit.map(sslOptions.ca, function(ca) {
                                                 return fs.readFileSync(ca)
                                         });
-                        var httpServer = ssl ? https.createServer(ssl, function () {}) : http.createServer(function () {});
+                        var httpServer = ssl ? https.createServer(ssl, function() {}) : http.createServer(function() {});
                         this.attach(httpServer);
-                        httpServer.listen(port, function () {
+                        httpServer.listen(port, function() {
                                         if (callback) callback.call(context);
                                 });
                         this._httpServer = httpServer;
                 },
-                stop: function (callback, context) {
-                        this._httpServer.addListener('close', function () {
+                stop: function(callback, context) {
+                        this._httpServer.addListener('close', function() {
                                         if (callback) callback.call(context);
                                 });
                         this._httpServer.close();
                 },
-                attach: function (httpServer) {
+                attach: function(httpServer) {
                         this._overrideListeners(httpServer, 'request', 'handle');
                         this._overrideListeners(httpServer, 'upgrade', 'handleUpgrade');
                 },
-                _overrideListeners: function (httpServer, event, method) {
+                _overrideListeners: function(httpServer, event, method) {
                         var listeners = httpServer.listeners(event),
                                 self = this;
                         httpServer.removeAllListeners(event);
-                        httpServer.addListener(event, function (request) {
+                        httpServer.addListener(event, function(request) {
                                         if (self.check(request)) return self[method].apply(self, arguments);
                                         for (var i = 0, n = listeners.length; i < n; i++)
                                                 listeners[i].apply(this, arguments);
                                 });
                 },
-                check: function (request) {
+                check: function(request) {
                         var path = url.parse(request.url, true).pathname;
                         return !!this._endpointRe.test(path);
                 },
-                handle: function (request, response) {
+                handle: function(request, response) {
                         var requestUrl = url.parse(request.url, true),
                                 requestMethod = request.method,
                                 self = this;
-                        request.addListener('error', function (error) {
+                        request.addListener('error', function(error) {
                                         self._returnError(response, error)
                                 });
-                        response.addListener('error', function (error) {
+                        response.addListener('error', function(error) {
                                         self._returnError(null, error)
                                 });
                         if (this._static.test(requestUrl.pathname))
@@ -125,7 +125,7 @@ echtzeit.NodeAdapter = echtzeit.Class({
                         if (requestMethod === 'GET')
                                 return this._callWithParams(request, response, requestUrl.query);
                         if (requestMethod === 'POST')
-                                return echtzeit.withDataFor(request, function (data) {
+                                return echtzeit.withDataFor(request, function(data) {
                                                 var type = (request.headers['content-type'] || '').split(';')[0],
                                                         params = (type === 'application/json') ? {
                                                                 message: data
@@ -137,13 +137,13 @@ echtzeit.NodeAdapter = echtzeit.Class({
                                         message: 'Unrecognized request type'
                                 });
                 },
-                handleUpgrade: function (request, socket, head) {
+                handleUpgrade: function(request, socket, head) {
                         var ws = new echtzeit.WebSocket(request, socket, head, null, {
                                         ping: this._options.ping
                                 }),
                                 clientId = null,
                                 self = this;
-                        ws.onmessage = function (event) {
+                        ws.onmessage = function(event) {
                                 try {
                                         self.debug('Received message via WebSocket[' + ws.version + ']: ?', event.data);
                                         var message = JSON.parse(event.data),
@@ -151,19 +151,19 @@ echtzeit.NodeAdapter = echtzeit.Class({
                                         if (clientId && cid !== clientId) self._server.closeSocket(clientId);
                                         self._server.openSocket(cid, ws);
                                         clientId = cid;
-                                        self._server.process(message, false, function (replies) {
+                                        self._server.process(message, false, function(replies) {
                                                         if (ws) ws.send(JSON.stringify(replies));
                                                 });
                                 } catch (e) {
                                         self.error(e.message + '\nBacktrace:\n' + e.stack);
                                 }
                         };
-                        ws.onclose = function (event) {
+                        ws.onclose = function(event) {
                                 self._server.closeSocket(clientId);
                                 ws = null;
                         };
                 },
-                handleEventSource: function (request, response) {
+                handleEventSource: function(request, response) {
                         var es = new echtzeit.EventSource(request, response, {
                                         ping: this._options.ping
                                 }),
@@ -171,12 +171,12 @@ echtzeit.NodeAdapter = echtzeit.Class({
                                 self = this;
                         this.debug('Opened EventSource connection for ?', clientId);
                         this._server.openSocket(clientId, es);
-                        es.onclose = function (event) {
+                        es.onclose = function(event) {
                                 self._server.closeSocket(clientId);
                                 es = null;
                         };
                 },
-                _callWithParams: function (request, response, params) {
+                _callWithParams: function(request, response, params) {
                         if (!params.message)
                                 return this._returnError(response, {
                                                 message: 'Received request with no message: ' + this._formatRequest(request)
@@ -192,7 +192,7 @@ echtzeit.NodeAdapter = echtzeit.Class({
                                 if (isGet) this._server.flushConnection(message);
                                 if (origin) headers['Access-Control-Allow-Origin'] = origin;
                                 headers['Cache-Control'] = 'no-cache, no-store';
-                                this._server.process(message, false, function (replies) {
+                                this._server.process(message, false, function(replies) {
                                                 var body = JSON.stringify(replies);
                                                 if (isGet) body = jsonp + '(' + body + ');';
                                                 headers['Content-Length'] = new Buffer(body, 'utf8').length.toString();
@@ -206,7 +206,7 @@ echtzeit.NodeAdapter = echtzeit.Class({
                                 this._returnError(response, error);
                         }
                 },
-                _formatRequest: function (request) {
+                _formatRequest: function(request) {
                         var method = request.method.toUpperCase(),
                                 string = 'curl -X ' + method;
                         string += " 'http://" + request.headers.host + request.url + "'";
@@ -216,7 +216,7 @@ echtzeit.NodeAdapter = echtzeit.Class({
                         }
                         return string;
                 },
-                _handleOptions: function (request, response) {
+                _handleOptions: function(request, response) {
                         var headers = {
                                 'Access-Control-Allow-Origin': '*',
                                 'Access-Control-Allow-Credentials': 'false',
@@ -228,7 +228,7 @@ echtzeit.NodeAdapter = echtzeit.Class({
                         response.write('');
                         response.end();
                 },
-                _returnError: function (response, error) {
+                _returnError: function(response, error) {
                         var message = error.message;
                         if (error.stack) message += '\nBacktrace:\n' + error.stack;
                         this.error(message);

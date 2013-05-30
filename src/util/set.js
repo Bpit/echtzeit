@@ -1,47 +1,48 @@
 echtzeit.Set = echtzeit.Class({
-  initialize: function() {
-    this._index = {};
-  },
+                initialize: function() {
+                        this._index = {};
+                },
 
-  add: function(item) {
-    var key = (item.id !== undefined) ? item.id : item;
-    if (this._index.hasOwnProperty(key)) return false;
-    this._index[key] = item;
-    return true;
-  },
+                add: function(item) {
+                        var key = (item.id !== undefined) ? item.id : item;
+                        if (this._index.hasOwnProperty(key)) return false;
+                        this._index[key] = item;
+                        return true;
+                },
 
-  forEach: function(block, context) {
-    for (var key in this._index) {
-      if (this._index.hasOwnProperty(key))
-        block.call(context, this._index[key]);
-    }
-  },
+                forEach: function(block, context) {
+                        for (var key in this._index) {
+                                if (this._index.hasOwnProperty(key))
+                                        block.call(context, this._index[key]);
+                        }
+                },
 
-  isEmpty: function() {
-    for (var key in this._index) {
-      if (this._index.hasOwnProperty(key)) return false;
-    }
-    return true;
-  },
+                isEmpty: function() {
+                        for (var key in this._index) {
+                                if (this._index.hasOwnProperty(key)) return false;
+                        }
+                        return true;
+                },
 
-  member: function(item) {
-    for (var key in this._index) {
-      if (this._index[key] === item) return true;
-    }
-    return false;
-  },
+                member: function(item) {
+                        for (var key in this._index) {
+                                if (this._index[key] === item) return true;
+                        }
+                        return false;
+                },
 
-  remove: function(item) {
-    var key = (item.id !== undefined) ? item.id : item;
-    var removed = this._index.hasOwnProperty(key);
-    delete this._index[key];
-    return removed;
-  },
+                remove: function(item) {
+                        var key = (item.id !== undefined) ? item.id : item;
+                        var removed = this._index.hasOwnProperty(key);
+                        delete this._index[key];
+                        return removed;
+                },
 
-  toArray: function() {
-    var array = [];
-    this.forEach(function(item) { array.push(item) });
-    return array;
-  }
-});
-
+                toArray: function() {
+                        var array = [];
+                        this.forEach(function(item) {
+                                        array.push(item)
+                                });
+                        return array;
+                }
+        });

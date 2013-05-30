@@ -12,7 +12,7 @@ var echtzeit = {
 
         ENV: (typeof window !== 'undefined') ? window : global,
 
-        extend: function (dest, source, overwrite) {
+        extend: function(dest, source, overwrite) {
                 if (!source) return dest;
                 for (var key in source) {
                         if (!source.hasOwnProperty(key)) continue;
@@ -23,7 +23,7 @@ var echtzeit = {
                 return dest;
         },
 
-        random: function (bitlength) {
+        random: function(bitlength) {
                 bitlength = bitlength || this.ID_LENGTH;
                 if (bitlength > 32) {
                         var parts = Math.ceil(bitlength / 32),
@@ -42,12 +42,12 @@ var echtzeit = {
                 return string;
         },
 
-        clientIdFromMessages: function (messages) {
+        clientIdFromMessages: function(messages) {
                 var first = [].concat(messages)[0];
                 return first && first.clientId;
         },
 
-        copyObject: function (object) {
+        copyObject: function(object) {
                 var clone, i, key;
                 if (object instanceof Array) {
                         clone = [];
@@ -63,7 +63,7 @@ var echtzeit = {
                 }
         },
 
-        commonElement: function (lista, listb) {
+        commonElement: function(lista, listb) {
                 for (var i = 0, n = lista.length; i < n; i++) {
                         if (this.indexOf(listb, lista[i]) !== -1)
                                 return lista[i];
@@ -71,7 +71,7 @@ var echtzeit = {
                 return null;
         },
 
-        indexOf: function (list, needle) {
+        indexOf: function(list, needle) {
                 if (list.indexOf) return list.indexOf(needle);
 
                 for (var i = 0, n = list.length; i < n; i++) {
@@ -80,7 +80,7 @@ var echtzeit = {
                 return -1;
         },
 
-        map: function (object, callback, context) {
+        map: function(object, callback, context) {
                 if (object.map) return object.map(callback, context);
                 var result = [];
 
@@ -97,7 +97,7 @@ var echtzeit = {
                 return result;
         },
 
-        filter: function (array, callback, context) {
+        filter: function(array, callback, context) {
                 var result = [];
                 for (var i = 0, n = array.length; i < n; i++) {
                         if (callback.call(context || null, array[i], i))
@@ -106,44 +106,44 @@ var echtzeit = {
                 return result;
         },
 
-        asyncEach: function (list, iterator, callback, context) {
+        asyncEach: function(list, iterator, callback, context) {
                 var n = list.length,
                         i = -1,
                         calls = 0,
                         looping = false;
 
-                var iterate = function () {
+                var iterate = function() {
                         calls -= 1;
                         i += 1;
                         if (i === n) return callback && callback.call(context);
                         iterator(list[i], resume);
                 };
 
-                var loop = function () {
+                var loop = function() {
                         if (looping) return;
                         looping = true;
                         while (calls > 0) iterate();
                         looping = false;
                 };
 
-                var resume = function () {
+                var resume = function() {
                         calls += 1;
                         loop();
                 };
                 resume();
         },
-        
-        toJSON: function (object) {
-                return JSON.stringify(object, function (key, value) {
+
+        toJSON: function(object) {
+                return JSON.stringify(object, function(key, value) {
                                 return (this[key] instanceof Array) ? this[key] : value;
                         });
         },
 
-        logger: function (message) {
+        logger: function(message) {
                 if (typeof console !== 'undefined') console.log(message);
         },
 
-        timestamp: function () {
+        timestamp: function() {
                 var date = new Date(),
                         year = date.getFullYear(),
                         month = date.getMonth() + 1,
@@ -152,7 +152,7 @@ var echtzeit = {
                         minute = date.getMinutes(),
                         second = date.getSeconds();
 
-                var pad = function (n) {
+                var pad = function(n) {
                         return n < 10 ? '0' + n : String(n);
                 };
 

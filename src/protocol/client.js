@@ -10,7 +10,7 @@ echtzeit.Client = echtzeit.Class({
                 DEFAULT_RETRY: 5.0,
                 DEFAULT_ENDPOINT: '/bayeux',
                 INTERVAL: 0.0,
-                initialize: function (endpoint, options) {
+                initialize: function(endpoint, options) {
                         this.info('New client created for ?', endpoint);
                         this._options = options || {};
                         this.endpoint = endpoint || this.DEFAULT_ENDPOINT;
@@ -30,30 +30,30 @@ echtzeit.Client = echtzeit.Class({
                                 timeout: 1000 * (this._options.timeout || this.CONNECTION_TIMEOUT)
                         };
                         if (echtzeit.Event)
-                                echtzeit.Event.on(echtzeit.ENV, 'beforeunload', function () {
+                                echtzeit.Event.on(echtzeit.ENV, 'beforeunload', function() {
                                                 if (echtzeit.indexOf(this._disabled, 'autodisconnect') < 0)
                                                         this.disconnect();
                                         }, this);
                 },
-                disable: function (feature) {
+                disable: function(feature) {
                         this._disabled.push(feature);
                 },
-                setHeader: function (name, value) {
+                setHeader: function(name, value) {
                         this._headers[name] = value;
                 },
-                getClientId: function () {
+                getClientId: function() {
                         return this._clientId;
                 },
-                getState: function () {
+                getState: function() {
                         switch (this._state) {
-                        case this.UNCONNECTED:
-                                return 'UNCONNECTED';
-                        case this.CONNECTING:
-                                return 'CONNECTING';
-                        case this.CONNECTED:
-                                return 'CONNECTED';
-                        case this.DISCONNECTED:
-                                return 'DISCONNECTED';
+                                case this.UNCONNECTED:
+                                        return 'UNCONNECTED';
+                                case this.CONNECTING:
+                                        return 'CONNECTING';
+                                case this.CONNECTED:
+                                        return 'CONNECTED';
+                                case this.DISCONNECTED:
+                                        return 'DISCONNECTED';
                         }
                 },
                 // Request
@@ -75,7 +75,7 @@ echtzeit.Client = echtzeit.Class({
                 //                * ext                                        * ext
                 //                * id                                         * id
                 //                * authSuccessful
-                handshake: function (callback, context) {
+                handshake: function(callback, context) {
                         if (this._advice.reconnect === this.NONE) return;
                         if (this._state !== this.UNCONNECTED) return;
                         this._state = this.CONNECTING;
@@ -86,7 +86,7 @@ echtzeit.Client = echtzeit.Class({
                                         channel: echtzeit.Channel.HANDSHAKE,
                                         version: echtzeit.BAYEUX_VERSION,
                                         supportedConnectionTypes: [this._transport.connectionType]
-                                }, function (response) {
+                                }, function(response) {
                                         if (response.successful) {
                                                 this._state = this.CONNECTED;
                                                 this._clientId = response.clientId;
@@ -96,7 +96,7 @@ echtzeit.Client = echtzeit.Class({
                                                 if (callback) callback.call(context);
                                         } else {
                                                 this.info('Handshake unsuccessful');
-                                                echtzeit.ENV.setTimeout(function () {
+                                                echtzeit.ENV.setTimeout(function() {
                                                                 self.handshake(callback, context)
                                                         }, this._advice.interval);
                                                 this._state = this.UNCONNECTED;
@@ -112,11 +112,11 @@ echtzeit.Client = echtzeit.Class({
                 //                                                     * ext
                 //                                                     * id
                 //                                                     * timestamp
-                connect: function (callback, context) {
+                connect: function(callback, context) {
                         if (this._advice.reconnect === this.NONE) return;
                         if (this._state === this.DISCONNECTED) return;
                         if (this._state === this.UNCONNECTED)
-                                return this.handshake(function () {
+                                return this.handshake(function() {
                                                 this.connect(callback, context)
                                         }, this);
                         this.callback(callback, context);
@@ -140,14 +140,14 @@ echtzeit.Client = echtzeit.Class({
                 //                * id                  MAY include:   * error
                 //                                                     * ext
                 //                                                     * id
-                disconnect: function () {
+                disconnect: function() {
                         if (this._state !== this.CONNECTED) return;
                         this._state = this.DISCONNECTED;
                         this.info('Disconnecting ?', this._clientId);
                         this._send({
                                         channel: echtzeit.Channel.DISCONNECT,
                                         clientId: this._clientId
-                                }, function (response) {
+                                }, function(response) {
                                         if (response.successful) this._transport.close();
                                 }, this);
                         this.info('Clearing channel listeners for ?', this._clientId);
@@ -163,9 +163,9 @@ echtzeit.Client = echtzeit.Class({
                 //                                                     * ext
                 //                                                     * id
                 //                                                     * timestamp
-                subscribe: function (channel, callback, context) {
+                subscribe: function(channel, callback, context) {
                         if (channel instanceof Array)
-                                return echtzeit.map(channel, function (c) {
+                                return echtzeit.map(channel, function(c) {
                                                 return this.subscribe(c, callback, context);
                                         }, this);
                         var subscription = new echtzeit.Subscription(this, channel, callback, context),
@@ -176,14 +176,14 @@ echtzeit.Client = echtzeit.Class({
                                 subscription.setDeferredStatus('succeeded');
                                 return subscription;
                         }
-                        this.connect(function () {
+                        this.connect(function() {
                                         this.info('Client ? attempting to subscribe to ?', this._clientId, channel);
                                         if (!force) this._channels.subscribe([channel], callback, context);
                                         this._send({
                                                         channel: echtzeit.Channel.SUBSCRIBE,
                                                         clientId: this._clientId,
                                                         subscription: channel
-                                                }, function (response) {
+                                                }, function(response) {
                                                         if (!response.successful) {
                                                                 subscription.setDeferredStatus('failed', echtzeit.Error.parse(response.error));
                                                                 return this._channels.unsubscribe(channel, callback, context);
@@ -205,20 +205,20 @@ echtzeit.Client = echtzeit.Class({
                 //                                                     * ext
                 //                                                     * id
                 //                                                     * timestamp
-                unsubscribe: function (channel, callback, context) {
+                unsubscribe: function(channel, callback, context) {
                         if (channel instanceof Array)
-                                return echtzeit.map(channel, function (c) {
+                                return echtzeit.map(channel, function(c) {
                                                 return this.unsubscribe(c, callback, context);
                                         }, this);
                         var dead = this._channels.unsubscribe(channel, callback, context);
                         if (!dead) return;
-                        this.connect(function () {
+                        this.connect(function() {
                                         this.info('Client ? attempting to unsubscribe from ?', this._clientId, channel);
                                         this._send({
                                                         channel: echtzeit.Channel.UNSUBSCRIBE,
                                                         clientId: this._clientId,
                                                         subscription: channel
-                                                }, function (response) {
+                                                }, function(response) {
                                                         if (!response.successful) return;
                                                         var channels = [].concat(response.subscription);
                                                         this.info('Unsubscription acknowledged for ? from ?', this._clientId, channels);
@@ -231,15 +231,15 @@ echtzeit.Client = echtzeit.Class({
                 // MAY include:   * clientId            MAY include:   * id
                 //                * id                                 * error
                 //                * ext                                * ext
-                publish: function (channel, data) {
+                publish: function(channel, data) {
                         var publication = new echtzeit.Publication();
-                        this.connect(function () {
+                        this.connect(function() {
                                         this.info('Client ? queueing published message to ?: ?', this._clientId, channel, data);
                                         this._send({
                                                         channel: channel,
                                                         data: data,
                                                         clientId: this._clientId
-                                                }, function (response) {
+                                                }, function(response) {
                                                         if (response.successful)
                                                                 publication.setDeferredStatus('succeeded');
                                                         else
@@ -248,8 +248,8 @@ echtzeit.Client = echtzeit.Class({
                                 }, this);
                         return publication;
                 },
-                receiveMessage: function (message) {
-                        this.pipeThroughExtensions('incoming', message, function (message) {
+                receiveMessage: function(message) {
+                        this.pipeThroughExtensions('incoming', message, function(message) {
                                         if (!message) return;
                                         if (message.advice) this._handleAdvice(message.advice);
                                         this._deliverMessage(message);
@@ -260,40 +260,40 @@ echtzeit.Client = echtzeit.Class({
                                         callback[0].call(callback[1], message);
                                 }, this);
                 },
-                _selectTransport: function (transportTypes) {
-                        echtzeit.Transport.get(this, transportTypes, this._disabled, function (transport) {
+                _selectTransport: function(transportTypes) {
+                        echtzeit.Transport.get(this, transportTypes, this._disabled, function(transport) {
                                         this.debug('Selected ? transport for ?', transport.connectionType, transport.endpoint);
                                         if (transport === this._transport) return;
                                         if (this._transport) this._transport.close();
                                         this._transport = transport;
                                         this._transport.cookies = this._cookies;
                                         this._transport.headers = this._headers;
-                                        transport.bind('down', function () {
+                                        transport.bind('down', function() {
                                                         if (this._transportUp !== undefined && !this._transportUp) return;
                                                         this._transportUp = false;
                                                         this.trigger('transport:down');
                                                 }, this);
-                                        transport.bind('up', function () {
+                                        transport.bind('up', function() {
                                                         if (this._transportUp !== undefined && this._transportUp) return;
                                                         this._transportUp = true;
                                                         this.trigger('transport:up');
                                                 }, this);
                                 }, this);
                 },
-                _send: function (message, callback, context) {
+                _send: function(message, callback, context) {
                         message.id = this._generateMessageId();
                         if (callback) this._responseCallbacks[message.id] = [callback, context];
-                        this.pipeThroughExtensions('outgoing', message, function (message) {
+                        this.pipeThroughExtensions('outgoing', message, function(message) {
                                         if (!message) return;
                                         this._transport.send(message, this._advice.timeout / 1000);
                                 }, this);
                 },
-                _generateMessageId: function () {
+                _generateMessageId: function() {
                         this._messageId += 1;
                         if (this._messageId >= Math.pow(2, 32)) this._messageId = 0;
                         return this._messageId.toString(36);
                 },
-                _handleAdvice: function (advice) {
+                _handleAdvice: function(advice) {
                         echtzeit.extend(this._advice, advice);
                         if (this._advice.reconnect === this.HANDSHAKE && this._state !== this.DISCONNECTED) {
                                 this._state = this.UNCONNECTED;
@@ -301,20 +301,20 @@ echtzeit.Client = echtzeit.Class({
                                 this._cycleConnection();
                         }
                 },
-                _deliverMessage: function (message) {
+                _deliverMessage: function(message) {
                         if (!message.channel || message.data === undefined) return;
                         this.info('Client ? calling listeners for ? with ?', this._clientId, message.channel, message.data);
                         this._channels.distributeMessage(message);
                 },
-                _teardownConnection: function () {
+                _teardownConnection: function() {
                         if (!this._connectRequest) return;
                         this._connectRequest = null;
                         this.info('Closed connection for ?', this._clientId);
                 },
-                _cycleConnection: function () {
+                _cycleConnection: function() {
                         this._teardownConnection();
                         var self = this;
-                        echtzeit.ENV.setTimeout(function () {
+                        echtzeit.ENV.setTimeout(function() {
                                         self.connect()
                                 }, this._advice.interval);
                 }
