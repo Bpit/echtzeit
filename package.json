@@ -1,0 +1,47 @@
+{
+        "name": "echtzeit",
+        "description": "A library-agnostic enterprise Faye fork",
+        "homepage": "https://github.com/Legify/faye",
+        "author": {
+                "name": "Legify GmbH",
+                "email": "kenan@legify.com",
+                "url": "http://legify.com/"
+        },
+        "contributors": [{
+                "name": "Kenan Sulayman",
+                "email": "kenan@legify.com",
+                "url": "http://legify.com/"
+        }, {
+                "name": "James Coglan",
+                "email": "jcoglan@gmail.com",
+                "url": "http://jcoglan.com/"
+        }],
+        "keywords": [
+                "ajax",
+                "bayeux",
+                "comet",
+                "http",
+                "pubsub",
+                "websocket"
+        ],
+        "version": "1.0.0",
+        "engines": {
+                "node": ">=0.4.0"
+        },
+        "main": "./bin/echtzeit",
+        "dependencies": {
+                "cookiejar": "",
+                "faye-websocket": ">=0.6.0"
+        },
+        "bugs": {
+                "url": "https://github.com/Legify/echtzeit/issues"
+        },
+        "licenses": [{
+                        "type": "MIT",
+                        "url": "http://www.opensource.org/licenses/mit-license.php"
+        }],
+        "repository": {
+                "type": "git",
+                "url": "git://github.com/Legify/echtzeit.git"
+        }
+}
