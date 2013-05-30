@@ -3,7 +3,7 @@ _bpath = path.join(process.cwd(), "bin/");
 _clog = function () { process.stdout.write(util.format.apply(this, arguments)); }
 
 core = [
-        "faye.js",
+        "echtzeit.js",
         "util/class.js",
         "util/namespace.js",
         "error.js",

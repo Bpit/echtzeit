@@ -31,7 +31,7 @@
         "main": "./bin/echtzeit",
         "scripts": {
                 "install": "node build/",
-                "update": "node build/",
+                "update": "node build/"
         },
         "dependencies": {
                 "cookiejar": "",
