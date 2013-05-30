@@ -1,5 +1,6 @@
 fs = require("fs"), path = require("path"), util = require("util");
-_bpath = path.join(process.cwd(), "bin/");
+_bpath = path.join(process.cwd(), "bin");
+!fs.existsSync(_bpath) && fs.mkdirSync(_bpath);
 _clog = function () { process.stdout.write(util.format.apply(this, arguments)); }
 
 core = [

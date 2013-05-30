@@ -1,7 +1,7 @@
 {
         "name": "echtzeit",
         "description": "A library-agnostic enterprise fork of the pub/sub toolset Faye",
-        "homepage": "https://github.com/Legify/faye",
+        "homepage": "https://github.com/Legify/echtzeit",
         "author": {
                 "name": "Legify GmbH",
                 "email": "kenan@legify.com",
@@ -24,7 +24,7 @@
                 "pubsub",
                 "websocket"
         ],
-        "version": "1.0.0",
+        "version": "1.0.2",
         "engines": {
                 "node": ">=0.4.0"
         },
