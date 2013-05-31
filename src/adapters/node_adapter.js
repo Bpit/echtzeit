@@ -70,15 +70,21 @@ echtzeit.NodeAdapter = echtzeit.Class({
                                 ciphers: this.CIPHER_ORDER,
                                 secureOptions: this.CIPHER_OPTIONS
                         } : null;
+                        
                         if (ssl && sslOptions.ca)
                                 ssl.ca = echtzeit.map(sslOptions.ca, function(ca) {
                                                 return fs.readFileSync(ca)
                                         });
-                        var httpServer = ssl ? https.createServer(ssl, function() {}) : http.createServer(function() {});
+
+                        var httpServer = ssl    && https.createServer(ssl, function() {})
+                                                || http.createServer(function() {});
+                        
                         this.attach(httpServer);
+
                         httpServer.listen(port, function() {
-                                        if (callback) callback.call(context);
+                                        callback && callback.call(context);
                                 });
+
                         this._httpServer = httpServer;
                 },
                 stop: function(callback, context) {
@@ -117,7 +123,7 @@ echtzeit.NodeAdapter = echtzeit.Class({
                                 });
                         if (this._static.test(requestUrl.pathname))
                                 return this._static.call(request, response);
-                        // http://groups.google.com/group/echtzeit-users/browse_thread/thread/4a01bb7d25d3636a
+
                         if (requestMethod === 'OPTIONS' || request.headers['access-control-request-method'] === 'POST')
                                 return this._handleOptions(request, response);
                         if (echtzeit.EventSource.isEventSource(request))

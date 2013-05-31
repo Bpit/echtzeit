@@ -32,6 +32,7 @@ node = [
         "transport/web_socket.js",
         "transport/node_http.js",
         "adapters/node_adapter.js",
+        "util/streamcache.js",
         "adapters/static_server.js"
 ];
 
