@@ -49,21 +49,21 @@ echtzeit.Transport.NodeHttp = echtzeit.extend(echtzeit.Class(echtzeit.Transport,
 
                                 response.setEncoding('utf8');
                                 response.addListener('data', function(chunk) {
-                                                body += chunk
-                                        });
+                                        body += chunk
+                                });
                                 response.addListener('end', function() {
-                                                try {
-                                                        message = JSON.parse(body);
-                                                } catch (e) {}
+                                        try {
+                                                message = JSON.parse(body);
+                                        } catch (e) {}
 
-                                                if (message) {
-                                                        self.receive(message);
-                                                        self.trigger('up');
-                                                } else {
-                                                        retry();
-                                                        self.trigger('down');
-                                                }
-                                        });
+                                        if (message) {
+                                                self.receive(message);
+                                                self.trigger('up');
+                                        } else {
+                                                retry();
+                                                self.trigger('down');
+                                        }
+                                });
                         },
 
                         _storeCookies: function(hostname, cookies) {
@@ -79,7 +79,7 @@ echtzeit.Transport.NodeHttp = echtzeit.extend(echtzeit.Class(echtzeit.Transport,
 
                 }), {
                 isUsable: function(client, endpoint, callback, context) {
-                        callback.call(context, typeof endpoint === 'string');
+                        callback.call(context, v.constructor === String);
                 }
         });
 

@@ -35,13 +35,15 @@ echtzeit.Server = echtzeit.Class({
 
                         var gatherReplies = function(replies) {
                                 responses = responses.concat(replies);
-                                processed += 1;
+                                ++processed;
+                                
                                 if (processed < messages.length) return;
 
                                 var n = responses.length;
-                                while (n--) {
-                                        if (!responses[n]) responses.splice(n, 1);
-                                }
+                                
+                                for(;n--;)
+                                        !responses[n] && responses.splice(n, 1);
+                                
                                 self.info('Returning replies: ?', responses);
                                 callback.call(context, responses);
                         };

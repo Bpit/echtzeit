@@ -35,11 +35,11 @@ echtzeit.util.StreamCache.prototype.end = function () {
 echtzeit.util._CachedReadStream = {};
 
 echtzeit.util.createCachedReadStream = function (a, b) {
-        void 0 == b && (b = {})
+        void 0 === b && (b = {})
 
         // whereas a is fd_ref && b is typeof object
         // __ if a, b do not statisfy (String a, Object b) forward to base implementation
-        if ( !(typeof a == "string" ) || !(typeof b == "object"))
+        if ( !(typeof a === "string" ) || !(typeof b === "object"))
                 return fs.createReadStream.apply(this, arguments);
 
         if ( echtzeit.util._CachedReadStream[a] ) return echtzeit.util._CachedReadStream[a];

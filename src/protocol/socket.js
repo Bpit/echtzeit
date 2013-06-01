@@ -6,7 +6,7 @@ echtzeit.Server.Socket = echtzeit.Class({
 
                 send: function(message) {
                         this._server.pipeThroughExtensions('outgoing', message, function(pipedMessage) {
-                                        this._socket.send(JSON.stringify([pipedMessage]));
+                                        this._socket["send"] && this._socket.send(JSON.stringify([pipedMessage]));
                                 }, this);
                 },
 

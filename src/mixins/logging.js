@@ -28,7 +28,7 @@ echtzeit.Logging = {
 
                 for (var key in echtzeit) {
                         if (klass) continue;
-                        if (typeof echtzeit[key] !== 'function') continue;
+                        if (echtzeit[key] instanceof Function) continue;
                         if (this instanceof echtzeit[key]) klass = key;
                 }
                 if (klass) banner += '.' + klass;
