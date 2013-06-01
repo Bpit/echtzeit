@@ -10,7 +10,9 @@ var echtzeit = {
 
         MANDATORY_CONNECTION_TYPES: ['long-polling', 'callback-polling', 'in-process'],
 
-        ENV: (typeof window !== 'undefined') ? window : global,
+        ENV: this["window"] || global,
+
+        fireback: false,
 
         extend: function(dest, source, overwrite) {
                 if (!source) return dest;
@@ -54,7 +56,7 @@ var echtzeit = {
                         i = object.length;
                         while (i--) clone[i] = echtzeit.copyObject(object[i]);
                         return clone;
-                } else if (typeof object === 'object') {
+                } else if (object instanceof Object) {
                         clone = (object === null) ? null : {};
                         for (key in object) clone[key] = echtzeit.copyObject(object[key]);
                         return clone;
@@ -140,7 +142,7 @@ var echtzeit = {
         },
 
         logger: function(message) {
-                if (typeof console !== 'undefined') console.log(message);
+                this["console"] && console.log(message);
         },
 
         timestamp: function() {

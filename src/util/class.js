@@ -1,5 +1,5 @@
 echtzeit.Class = function (parent, methods) {
-        if (typeof parent !== 'function') {
+        if (!(parent instanceof Function)) {
                 methods = parent;
                 parent = Object;
         }

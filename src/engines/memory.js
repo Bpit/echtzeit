@@ -101,6 +101,7 @@ echtzeit.Engine.Memory.prototype = {
                 }
 
                 clients.forEach(function(clientId) {
+                                if ( !echtzeit.fireback && clientId == message.clientId) return false;
                                 this._server.debug('Queueing for client ?: ?', clientId, message);
                                 messages[clientId] = messages[clientId] || [];
                                 messages[clientId].push(echtzeit.copyObject(message));

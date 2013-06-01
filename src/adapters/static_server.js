@@ -48,7 +48,7 @@ echtzeit.StaticServer = echtzeit.Class({
                         };
 
                         if (request.headers['if-none-match'] === cache.digest
-                                        || request.headers['if-modified-since'] && cache.mtime <= new Date(ims)) {
+                                        || request.headers['if-modified-since'] && cache.mtime <= new Date(request.headers['if-modified-since'])) {
                                 response.writeHead(304, headers), response.end();
                         } else {
                                 headers['Content-Length'] = cache.content.length;

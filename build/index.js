@@ -1,5 +1,5 @@
 fs = require("fs"), path = require("path"), util = require("util");
-_bpath = path.join(process.cwd(), "bin");
+_bpath = path.join(__dirname, "..", "bin");
 !fs.existsSync(_bpath) && fs.mkdirSync(_bpath);
 _clog = function () { process.stdout.write(util.format.apply(this, arguments)); }
 
@@ -49,7 +49,7 @@ browser = [
 
 _gather = function (a) {
         _state = "";
-        for ( b in a ) _state += fs.readFileSync(path.join(process.cwd(), "src/", a[b])) + "\n"
+        for ( b in a ) _state += fs.readFileSync(path.join(__dirname, "..", "src/", a[b])) + "\n"
         return _state;
 }
 
@@ -60,5 +60,6 @@ _core = _gather(core);
         [""],
         ["Compiling Echtzeit/Node.. ", !fs.writeFileSync(_bpath + "/echtzeit.js", _core + _gather(node)) && "", "done."],
         ["Creating Echtzeit/Client Path.. ", !fs.existsSync(_bpath + "/client") && !fs.mkdirSync(_bpath + "/client") && "" || "", "done."],
-        ["Compiling Echtzeit/Client.. ", !fs.writeFileSync(_bpath + "/client/echtzeit.client.js", _core + _gather(browser)) && "", "done."]
+        ["Compiling Echtzeit/Client.. ", !fs.writeFileSync(_bpath + "/client/echtzeit.client.js", _core + _gather(browser)) && "", "done."],
+        [""]
 ].forEach(function (v) { _clog(v.join("")+"\n") })
