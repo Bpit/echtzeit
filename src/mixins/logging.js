@@ -28,7 +28,7 @@ echtzeit.Logging = {
 
                 for (var key in echtzeit) {
                         if (klass) continue;
-                        if (echtzeit[key] instanceof Function) continue;
+                        if (!(echtzeit[key] instanceof Function)) continue;
                         if (this instanceof echtzeit[key]) klass = key;
                 }
                 if (klass) banner += '.' + klass;
@@ -39,10 +39,10 @@ echtzeit.Logging = {
 };
 
 (function() {
-                for (var key in echtzeit.Logging.LOG_LEVELS)
-                        (function(level, value) {
-                                        echtzeit.Logging[level] = function() {
-                                                this.log(arguments, level);
-                                        };
-                                })(key, echtzeit.Logging.LOG_LEVELS[key]);
-        })();
+        for (var key in echtzeit.Logging.LOG_LEVELS)
+                (function(level, value) {
+                                echtzeit.Logging[level] = function() {
+                                        this.log(arguments, level);
+                                };
+                        })(key, echtzeit.Logging.LOG_LEVELS[key]);
+})();
