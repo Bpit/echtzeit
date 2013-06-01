@@ -12,7 +12,7 @@ var echtzeit = {
 
         ENV: this["window"] || global,
 
-        fireback: false,
+        fireback: true,
 
         extend: function(dest, source, overwrite) {
                 if (!source) return dest;
