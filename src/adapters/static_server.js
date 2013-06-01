@@ -30,16 +30,10 @@ echtzeit.StaticServer = echtzeit.Class({
                                         cache.digest = cache.digest || crypto.createHash('sha1').update(cache.content).digest('hex');
                                         cache.mtime = cache.mtime || fs.statSync(fn).mtime;
                                 } catch (e) {
-                                        throw e;
-                                        response.writeHead(404, {});
-                                        return response.end();
+                                        return response.writeHead(404, {}), response.end();
                                 }
 
                         var data = echtzeit.util.createCachedReadStream(fn);
-
-                        data.on("error", function () {
-                                response.writeHead(404);
-                        });
 
                         var headers = {
                                 'ETag': cache.digest,
