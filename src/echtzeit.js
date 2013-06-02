@@ -35,7 +35,7 @@
 'use strict';
 
 var echtzeit = {
-        VERSION: '1.0.3b',
+        VERSION: '1.1.0',
 
         BAYEUX_VERSION: '1.0',
         ID_LENGTH: 160,
