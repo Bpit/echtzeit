@@ -1,7 +1,7 @@
 ![Echtzeit by Legify GmbH](http://data.sly.mn/PK6E/echtzeit.png)
 ===========
 
-Echtzeit is a toolset for pub/sub messaging between web clients.
+Echtzeit is a highly optimized toolset for pub/sub messaging between web clients built to scale.
 
 This is an enterprise fork of Faye, please see http://faye.jcoglan.com for further information on the general purpose toolset with Ruby/Rack support. However, we endorse any *business to business* dialog and are open for support at `kenan@sly.mn` — please include information about the company you represent and the purpose of your *echtzeit* integration.
 
