@@ -48,7 +48,9 @@ echtzeit.Transport.WebSocket = echtzeit.extend(echtzeit.Class(echtzeit.Transport
                                 var ws = echtzeit.Transport.WebSocket.getClass();
                                 if (!ws) return this.setDeferredStatus('failed');
 
-                                this._socket = new ws(echtzeit.Transport.WebSocket.getSocketUrl(this.endpoint));
+                                var url = Faye.Transport.WebSocket.getSocketUrl(this.endpoint);
+                                this._socket = this.ca ? new ws(url, [], {ca: this.ca}) : new ws(url);
+                                
                                 var self = this;
 
                                 this._socket.onopen = function() {

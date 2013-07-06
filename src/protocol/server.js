@@ -98,6 +98,7 @@ echtzeit.Server = echtzeit.Class({
                         if (!echtzeit.Grammar.CHANNEL_NAME.test(channelName))
                                 error = echtzeit.Error.channelInvalid(channelName);
 
+                        delete message.clientId;
                         if (!error) this._engine.publish(message);
 
                         response = this._makeResponse(message);

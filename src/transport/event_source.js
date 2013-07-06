@@ -5,7 +5,7 @@ echtzeit.Transport.EventSource = echtzeit.extend(echtzeit.Class(echtzeit.Transpo
 
                                 this._xhr = new echtzeit.Transport.XHR(client, endpoint);
 
-                                var socket = new EventSource(endpoint + '/' + client.getClientId()),
+                                var socket = new EventSource(endpoint + '/' + client._clientId),
                                         self = this;
 
                                 socket.onopen = function() {
@@ -52,7 +52,7 @@ echtzeit.Transport.EventSource = echtzeit.extend(echtzeit.Class(echtzeit.Transpo
                         }
                 }), {
                 isUsable: function(client, endpoint, callback, context) {
-                        var id = client.getClientId();
+                        var id = client._clientId;
                         if (!id) return callback.call(context, false);
 
                         echtzeit.Transport.XHR.isUsable(client, endpoint, function(usable) {
@@ -63,7 +63,7 @@ echtzeit.Transport.EventSource = echtzeit.extend(echtzeit.Class(echtzeit.Transpo
 
                 create: function(client, endpoint) {
                         var sockets = client.transports.eventsource = client.transports.eventsource || {},
-                                id = client.getClientId(),
+                                id = client._clientId,
                                 endpoint = endpoint + '/' + (id || '');
 
                         sockets[endpoint] = sockets[endpoint] || new this(client, endpoint);

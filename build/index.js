@@ -39,7 +39,6 @@ node = [
 browser = [
         "util/browser/event.js",
         "util/browser/uri.js",
-        "util/browser/json.js",
         "transport/web_socket.js",
         "transport/event_source.js",
         "transport/xhr.js",

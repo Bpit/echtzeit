@@ -13,18 +13,16 @@ echtzeit.CookieJar = require('cookiejar').CookieJar;
 echtzeit.withDataFor = function(transport, callback, context) {
         var data = '';
         transport.setEncoding('utf8');
-        transport.addListener('data', function(chunk) {
+        transport.on('data', function(chunk) {
                         data += chunk
                 });
-        transport.addListener('end', function() {
+        transport.on('end', function() {
                         callback.call(context, data);
                 });
 };
 echtzeit.NodeAdapter = echtzeit.Class({
                 DEFAULT_ENDPOINT: '/bayeux',
                 SCRIPT_PATH: 'echtzeit.client.js',
-                CIPHER_ORDER: 'ECDHE-RSA-AES256-SHA384:AES256-SHA256:RC4-SHA:RC4:HIGH:!MD5:!aNULL:!EDH:!AESGCM',
-                CIPHER_OPTIONS: require('constants').SSL_OP_CIPHER_SERVER_PREFERENCE,
                 TYPE_JSON: {
                         'Content-Type': 'application/json; charset=utf-8'
                 },
@@ -63,36 +61,6 @@ echtzeit.NodeAdapter = echtzeit.Class({
                 getClient: function() {
                         return this._client = this._client || new echtzeit.Client(this._server);
                 },
-                listen: function(port, sslOptions, callback, context) {
-                        var ssl = sslOptions && sslOptions.cert ? {
-                                key: fs.readFileSync(sslOptions.key),
-                                cert: fs.readFileSync(sslOptions.cert),
-                                ciphers: this.CIPHER_ORDER,
-                                secureOptions: this.CIPHER_OPTIONS
-                        } : null;
-                        
-                        if (ssl && sslOptions.ca)
-                                ssl.ca = echtzeit.map(sslOptions.ca, function(ca) {
-                                                return fs.readFileSync(ca)
-                                        });
-
-                        var httpServer = ssl    && https.createServer(ssl, function() {})
-                                                || http.createServer(function() {});
-                        
-                        this.attach(httpServer);
-
-                        httpServer.listen(port, function() {
-                                        callback && callback.call(context);
-                                });
-
-                        this._httpServer = httpServer;
-                },
-                stop: function(callback, context) {
-                        this._httpServer.addListener('close', function() {
-                                        if (callback) callback.call(context);
-                                });
-                        this._httpServer.close();
-                },
                 attach: function(httpServer) {
                         this._overrideListeners(httpServer, 'request', 'handle');
                         this._overrideListeners(httpServer, 'upgrade', 'handleUpgrade');
@@ -101,7 +69,7 @@ echtzeit.NodeAdapter = echtzeit.Class({
                         var listeners = httpServer.listeners(event),
                                 self = this;
                         httpServer.removeAllListeners(event);
-                        httpServer.addListener(event, function(request) {
+                        httpServer.on(event, function(request) {
                                         if (self.check(request)) return self[method].apply(self, arguments);
                                         for (var i = 0, n = listeners.length; i < n; i++)
                                                 listeners[i].apply(this, arguments);
@@ -115,10 +83,10 @@ echtzeit.NodeAdapter = echtzeit.Class({
                         var requestUrl = url.parse(request.url, true),
                                 requestMethod = request.method,
                                 self = this;
-                        request.addListener('error', function(error) {
+                        request.on('error', function(error) {
                                         self._returnError(response, error)
                                 });
-                        response.addListener('error', function(error) {
+                        response.on('error', function(error) {
                                         self._returnError(null, error)
                                 });
                         if (this._static.test(requestUrl.pathname))

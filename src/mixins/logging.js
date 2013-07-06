@@ -1,5 +1,6 @@
 echtzeit.Logging = {
         LOG_LEVELS: {
+                fatal: 4,
                 error: 3,
                 warn: 2,
                 info: 1,
@@ -8,15 +9,12 @@ echtzeit.Logging = {
 
         logLevel: 'error',
 
-        log: function(messageArgs, level) {
+        writeLog: function(messageArgs, level) {
                 if (!echtzeit.logger) return;
 
-                var levels = echtzeit.Logging.LOG_LEVELS;
-                if (levels[echtzeit.Logging.logLevel] > levels[level]) return;
-
                 var messageArgs = Array.prototype.slice.apply(messageArgs),
-                        banner = ' [' + level.toUpperCase() + '] [echtzeit',
-                        klass = this.className,
+                        banner  = '[echtzeit',
+                        klass   = this.className,
 
                         message = messageArgs.shift().replace(/\?/g, function() {
                                         try {
@@ -34,7 +32,10 @@ echtzeit.Logging = {
                 if (klass) banner += '.' + klass;
                 banner += '] ';
 
-                echtzeit.logger(echtzeit.timestamp() + banner + message);
+                if (typeof echtzeit.logger[level] === 'function')
+                        echtzeit.logger[level](banner + message);
+                else if (typeof echtzeit.logger === 'function')
+                        echtzeit.logger(banner + message);
         }
 };
 
@@ -42,7 +43,7 @@ echtzeit.Logging = {
         for (var key in echtzeit.Logging.LOG_LEVELS)
                 (function(level, value) {
                                 echtzeit.Logging[level] = function() {
-                                        this.log(arguments, level);
+                                        this.writeLog(arguments, level);
                                 };
                         })(key, echtzeit.Logging.LOG_LEVELS[key]);
 })();

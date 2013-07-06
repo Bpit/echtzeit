@@ -12,19 +12,20 @@ echtzeit.Client = echtzeit.Class({
                 INTERVAL: 0.0,
                 initialize: function(endpoint, options) {
                         this.info('New client created for ?', endpoint);
-                        this._options = options || {};
-                        this.endpoint = endpoint || this.DEFAULT_ENDPOINT;
-                        this.endpoints = this._options.endpoints || {};
+                        this._options   = options || {};
+                        this.endpoint   = endpoint || this.DEFAULT_ENDPOINT;
+                        this.endpoints  = this._options.endpoints || {};
                         this.transports = {};
-                        this._cookies = echtzeit.CookieJar && new echtzeit.CookieJar();
-                        this._headers = {};
-                        this._disabled = [];
-                        this.retry = this._options.retry || this.DEFAULT_RETRY;
-                        this._state = this.UNCONNECTED;
-                        this._channels = new echtzeit.Channel.Set();
+                        this._cookies   = echtzeit.CookieJar && new echtzeit.CookieJar();
+                        this._headers   = {};
+                        this._ca        = this._options.ca;
+                        this._disabled  = [];
+                        this.retry      = this._options.retry || this.DEFAULT_RETRY;
+                        this._state     = this.UNCONNECTED;
+                        this._channels  = new echtzeit.Channel.Set();
                         this._messageId = 0;
                         this._responseCallbacks = {};
-                        this._advice = {
+                        this._advice    = {
                                 reconnect: this.RETRY,
                                 interval: 1000 * (this._options.interval || this.INTERVAL),
                                 timeout: 1000 * (this._options.timeout || this.CONNECTION_TIMEOUT)
@@ -40,21 +41,6 @@ echtzeit.Client = echtzeit.Class({
                 },
                 setHeader: function(name, value) {
                         this._headers[name] = value;
-                },
-                getClientId: function() {
-                        return this._clientId;
-                },
-                getState: function() {
-                        switch (this._state) {
-                                case this.UNCONNECTED:
-                                        return 'UNCONNECTED';
-                                case this.CONNECTING:
-                                        return 'CONNECTING';
-                                case this.CONNECTED:
-                                        return 'CONNECTED';
-                                case this.DISCONNECTED:
-                                        return 'DISCONNECTED';
-                        }
                 },
                 // Request
                 // MUST include:  * channel
@@ -268,6 +254,7 @@ echtzeit.Client = echtzeit.Class({
                                         this._transport = transport;
                                         this._transport.cookies = this._cookies;
                                         this._transport.headers = this._headers;
+                                        this._transport.ca      = this._ca;
                                         transport.bind('down', function() {
                                                         if (this._transportUp !== undefined && !this._transportUp) return;
                                                         this._transportUp = false;
