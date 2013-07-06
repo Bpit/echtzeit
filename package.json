@@ -17,6 +17,9 @@
                 "url": "http://jcoglan.com/"
         }],
         "keywords": [
+		"faye",
+		"echtzeit",
+		"realtime",
                 "ajax",
                 "bayeux",
                 "comet",
@@ -24,7 +27,7 @@
                 "pubsub",
                 "websocket"
         ],
-        "version": "1.1.0",
+        "version": "1.2.0",
         "engines": {
                 "node": ">=0.4.0"
         },
@@ -34,8 +37,8 @@
                 "update": "node build/"
         },
         "dependencies": {
-                "cookiejar": "",
-                "faye-websocket": ">=0.6.0"
+                "cookiejar": "*",
+                "faye-websocket": "*"
         },
         "bugs": {
                 "url": "https://github.com/Legify/echtzeit/issues"
