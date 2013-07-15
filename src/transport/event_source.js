@@ -43,8 +43,12 @@ echtzeit.Transport.EventSource = echtzeit.extend(echtzeit.Class(echtzeit.Transpo
                                         });
                         },
 
-                        request: function(message, timeout) {
-                                this._xhr.request(message, timeout);
+                        encode: function(messages) {
+                                return this._xhr.encode(messages);
+                        },
+                        
+                        request: function(messages, timeout) {
+                                this._xhr.request(messages, timeout);
                         },
 
                         close: function() {

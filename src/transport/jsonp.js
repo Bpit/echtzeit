@@ -1,10 +1,9 @@
 echtzeit.Transport.JSONP = echtzeit.extend(echtzeit.Class(echtzeit.Transport, {
-                        shouldFlush: function (messages) {
-                                var endpoint = echtzeit.copyObject(this.endpoint);
-                                endpoint.query.message = echtzeit.toJSON(messages);
-                                endpoint.query.jsonp   = '__jsonp' + echtzeit.Transport.JSONP._cbCount + '__';
-                                var url = echtzeit.URI.stringify(endpoint);
-                                return url.length >= echtzeit.Transport.MAX_URL_LENGTH;
+                        encode: function(messages) {
+                                var url = echtzeit.copyObject(this.endpoint);
+                                url.query.message = echtzeit.toJSON(messages);
+                                url.query.jsonp   = '__jsonp' + echtzeit.Transport.JSONP._cbCount + '__';
+                                return echtzeit.URI.stringify(url);
                         },
                         request: function (messages, timeout) {
                                 var     head = document.getElementsByTagName('head')[0],

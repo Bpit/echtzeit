@@ -8,6 +8,7 @@ echtzeit.Client = echtzeit.Class({
                 NONE: 'none',
                 CONNECTION_TIMEOUT: 60.0,
                 DEFAULT_RETRY: 5.0,
+                MAX_REQUEST_SIZE:     2048,
                 DEFAULT_ENDPOINT: '/bayeux',
                 INTERVAL: 0.0,
                 initialize: function(endpoint, options) {
@@ -16,14 +17,16 @@ echtzeit.Client = echtzeit.Class({
                         this.endpoint   = echtzeit.URI.parse(endpoint || this.DEFAULT_ENDPOINT);
                         this.endpoints  = this._options.endpoints || {};
                         this.transports = {};
-                        this._cookies   = echtzeit.CookieJar && new echtzeit.CookieJar();
-                        this._headers   = {};
-                        this._ca        = this._options.ca;
+                        this.cookies   = echtzeit.CookieJar && new echtzeit.CookieJar();
+                        this.headers   = {};
+                        this.ca        = this._options.ca;
                         this._disabled  = [];
                         this.retry      = this._options.retry || this.DEFAULT_RETRY;
 
                         for (var key in this.endpoints)
-                                this.endpoints[key] = Faye.URI.parse(this.endpoints[key]);
+                                this.endpoints[key] = echtzeit.URI.parse(this.endpoints[key]);
+
+                        this.maxRequestSize = this.MAX_REQUEST_SIZE;
 
                         this._state     = this.UNCONNECTED;
                         this._channels  = new echtzeit.Channel.Set();
@@ -44,7 +47,7 @@ echtzeit.Client = echtzeit.Class({
                         this._disabled.push(feature);
                 },
                 setHeader: function(name, value) {
-                        this._headers[name] = value;
+                        this.headers[name] = value;
                 },
                 // Request
                 // MUST include:  * channel
@@ -256,9 +259,6 @@ echtzeit.Client = echtzeit.Class({
                                         if (transport === this._transport) return;
                                         if (this._transport) this._transport.close();
                                         this._transport = transport;
-                                        this._transport.cookies = this._cookies;
-                                        this._transport.headers = this._headers;
-                                        this._transport.ca      = this._ca;
                                         transport.bind('down', function() {
                                                         if (this._transportUp !== undefined && !this._transportUp) return;
                                                         this._transportUp = false;

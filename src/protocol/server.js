@@ -17,6 +17,7 @@ echtzeit.Server = echtzeit.Class({
                 },
 
                 openSocket: function(clientId, socket) {
+                        if (!socket) return;
                         this._engine.openSocket(clientId, new echtzeit.Server.Socket(this, socket));
                 },
 

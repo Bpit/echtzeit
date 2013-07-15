@@ -23,8 +23,8 @@ echtzeit.Transport.WebSocket = echtzeit.extend(echtzeit.Class(echtzeit.Transport
                                 this._messages[messages[i].id] = messages[i];
                         }
                         this.callback(function(socket) {
-                                        socket.send(echtzeit.toJSON(messages))
-                                });
+                                socket && socket.send(echtzeit.toJSON(messages))
+                        });
                         this.connect();
                 },
 
@@ -48,8 +48,10 @@ echtzeit.Transport.WebSocket = echtzeit.extend(echtzeit.Class(echtzeit.Transport
                         var ws = echtzeit.Transport.WebSocket.getClass();
                         if (!ws) return this.setDeferredStatus('failed');
 
-                        var url = echtzeit.Transport.WebSocket.getSocketUrl(this.endpoint);
-                        this._socket = this.ca ? new ws(url, [], {ca: this.ca}) : new ws(url);
+                        var     url     = echtzeit.Transport.WebSocket.getSocketUrl(this.endpoint),
+                                options = {headers: this._client.headers, ca: this._client.ca};
+
+                        this._socket = echtzeit.WebSocket ? new ws(url, [], options) : new ws(url);
                         
                         var self = this;
 

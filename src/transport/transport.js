@@ -7,6 +7,9 @@ echtzeit.Transport = echtzeit.extend(echtzeit.Class({
                                 this._outbox = [];
                         },
                         close: function () {},
+                        encode: function(messages) {
+                                return '';
+                        },
                         send: function (message, timeout) {
                                 this.debug('Client ? sending message to ?: ?',
                                         this._client._clientId, echtzeit.URI.stringify(this.endpoint), message);
@@ -17,8 +20,7 @@ echtzeit.Transport = echtzeit.extend(echtzeit.Class({
                                         return this.addTimeout('publish', 0.01, this.flush, this);
                                 if (message.channel === echtzeit.Channel.CONNECT)
                                         this._connectMessage = message;
-                                if (this.shouldFlush && this.shouldFlush(this._outbox))
-                                        return this.flush();
+                                this.flushLargeBatch();
                                 this.addTimeout('publish', this.MAX_DELAY, this.flush, this);
                         },
                         flush: function () {
@@ -30,6 +32,13 @@ echtzeit.Transport = echtzeit.extend(echtzeit.Class({
                                 this.request(this._outbox, this._timeout);
                                 this._connectMessage = null;
                                 this._outbox = [];
+                        },
+                        flushLargeBatch: function() {
+                                var string = this.encode(this._outbox);
+                                if (string.length < this._client.maxRequestSize) return;
+                                var last = this._outbox.pop();
+                                this.flush();
+                                if (last) this._outbox.push(last);
                         },
                         receive: function (responses) {
                                 this.debug('Client ? received from ?: ?',
@@ -51,7 +60,6 @@ echtzeit.Transport = echtzeit.extend(echtzeit.Class({
                                 };
                         }
                 }), {
-                MAX_URL_LENGTH: 2048,
                 get: function (client, allowed, disabled, callback, context) {
                         var endpoint = client.endpoint;
                         echtzeit.asyncEach(this._transports, function (pair, resume) {

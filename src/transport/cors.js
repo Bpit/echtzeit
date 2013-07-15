@@ -1,11 +1,24 @@
 echtzeit.Transport.CORS = echtzeit.extend(echtzeit.Class(echtzeit.Transport, {
+                        encode: function (messages) {
+                                return 'message=' + encodeURIComponent(echtzeit.toJSON(messages));
+                        },
                         request: function (message, timeout) {
                                 var xhrClass = echtzeit.ENV.XDomainRequest ? XDomainRequest : XMLHttpRequest,
                                         xhr = new xhrClass(),
-                                        retry = this.retry(message, timeout),
-                                        self = this;
+                                        retry    = this.retry(messages, timeout),
+                                        headers  = this._client.headers,
+                                        self     = this,
+                                        key;
+
                                 xhr.open('POST', echtzeit.URI.stringify(this.endpoint), true);
-                                if (xhr.setRequestHeader) xhr.setRequestHeader('Pragma', 'no-cache');
+                                
+                                if (xhr.setRequestHeader) {
+                                        xhr.setRequestHeader('Pragma', 'no-cache');
+                                        for (key in headers)
+                                                headers.hasOwnProperty(key)
+                                                        && xhr.setRequestHeader(key, headers[key]);
+                                }
+                                
                                 var cleanUp = function () {
                                         if (!xhr) return false;
                                         xhr.onload = xhr.onerror = xhr.ontimeout = xhr.onprogress = null;
@@ -36,7 +49,7 @@ echtzeit.Transport.CORS = echtzeit.extend(echtzeit.Class(echtzeit.Transport, {
                                 xhr.onerror = onerror;
                                 xhr.ontimeout = onerror;
                                 xhr.onprogress = function () {};
-                                xhr.send('message=' + encodeURIComponent(echtzeit.toJSON(message)));
+                                xhr.send(this.encode(messages));
                         }
                 }), {
                 isUsable: function (client, endpoint, callback, context) {

@@ -1,6 +1,10 @@
 echtzeit.Transport.XHR = echtzeit.extend(echtzeit.Class(echtzeit.Transport, {
-                        request: function(message, timeout) {
-                                var retry = this.retry(message, timeout),
+                                encode: function(messages) {
+                                        return echtzeit.toJSON(messages);
+                                },
+
+                                request: function(messages, timeout) {
+                                        var retry = this.retry(messages, timeout),
                                         path = this.endpoint.path,
                                         self = this,
                                         xhr = echtzeit.ENV.ActiveXObject ? new ActiveXObject("Microsoft.XMLHTTP") : new XMLHttpRequest();
@@ -10,11 +14,10 @@ echtzeit.Transport.XHR = echtzeit.extend(echtzeit.Class(echtzeit.Transport, {
                                 xhr.setRequestHeader('Pragma', 'no-cache');
                                 xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
 
-                                var headers = this.headers;
-                                for (var key in headers) {
-                                        if (!headers.hasOwnProperty(key)) continue;
-                                        xhr.setRequestHeader(key, headers[key]);
-                                }
+                                var headers = this._client.headers;
+                                for (var key in headers)
+                                        headers.hasOwnProperty(key)
+                                                && xhr.setRequestHeader(key, headers[key]);
 
                                 var abort = function() {
                                         xhr.abort()

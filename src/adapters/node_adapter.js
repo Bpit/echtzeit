@@ -35,7 +35,7 @@ echtzeit.NodeAdapter = echtzeit.Class({
                 initialize: function(options) {
                         this._options = options || {};
                         this._endpoint = this._options.mount || this.DEFAULT_ENDPOINT;
-                        this._endpointRe = new RegExp('^' + this._endpoint.replace(/\/$/, '') + '(/[^/]+)*(\\.[^\\.]+)?$');
+                        this._endpointRe = new RegExp('^' + this._endpoint.replace(/\/$/, '') + '(/[^/]*)*(\\.[^\\.]+)?$');
                         this._server = new echtzeit.Server(this._options);
                         this._static = new echtzeit.StaticServer(path.dirname(__filename) + '/client', /\.(?:js|map)$/);
                         this._static.map(path.basename(this._endpoint) + '.js', this.SCRIPT_PATH);
@@ -111,45 +111,6 @@ echtzeit.NodeAdapter = echtzeit.Class({
                                         message: 'Unrecognized request type'
                                 });
                 },
-                handleUpgrade: function(request, socket, head) {
-                        var ws = new echtzeit.WebSocket(request, socket, head, null, {
-                                        ping: this._options.ping
-                                }),
-                                clientId = null,
-                                self = this;
-                        ws.onmessage = function(event) {
-                                try {
-                                        self.debug('Received message via WebSocket[' + ws.version + ']: ?', event.data);
-                                        var message = JSON.parse(event.data),
-                                                cid = echtzeit.clientIdFromMessages(message);
-                                        if (clientId && cid !== clientId) self._server.closeSocket(clientId);
-                                        self._server.openSocket(cid, ws);
-                                        clientId = cid;
-                                        self._server.process(message, false, function(replies) {
-                                                        if (ws) ws.send(JSON.stringify(replies));
-                                                });
-                                } catch (e) {
-                                        self.error(e.message + '\nBacktrace:\n' + e.stack);
-                                }
-                        };
-                        ws.onclose = function(event) {
-                                self._server.closeSocket(clientId);
-                                ws = null;
-                        };
-                },
-                handleEventSource: function(request, response) {
-                        var es = new echtzeit.EventSource(request, response, {
-                                        ping: this._options.ping
-                                }),
-                                clientId = es.url.split('/').pop(),
-                                self = this;
-                        this.debug('Opened EventSource connection for ?', clientId);
-                        this._server.openSocket(clientId, es);
-                        es.onclose = function(event) {
-                                self._server.closeSocket(clientId);
-                                es = null;
-                        };
-                },
                 _callWithParams: function(request, response, params) {
                         if (!params.message)
                                 return this._returnError(response, {
@@ -180,15 +141,44 @@ echtzeit.NodeAdapter = echtzeit.Class({
                                 this._returnError(response, error);
                         }
                 },
-                _formatRequest: function(request) {
-                        var method = request.method.toUpperCase(),
-                                string = 'curl -X ' + method;
-                        string += " 'http://" + request.headers.host + request.url + "'";
-                        if (method === 'POST') {
-                                string += " -H 'Content-Type: " + request.headers['content-type'] + "'";
-                                string += " -d '" + request.body + "'";
-                        }
-                        return string;
+                handleUpgrade: function(request, socket, head) {
+                        var ws = new echtzeit.WebSocket(request, socket, head, null, {
+                                        ping: this._options.ping
+                                }),
+                                clientId = null,
+                                self = this;
+                        ws.onmessage = function(event) {
+                                try {
+                                        self.debug('Received message via WebSocket[' + ws.version + ']: ?', event.data);
+                                        var message = echtzeit.toJSON(event.data),
+                                                cid = echtzeit.clientIdFromMessages(message);
+                                        if (clientId && cid !== clientId) self._server.closeSocket(clientId);
+                                        self._server.openSocket(cid, ws);
+                                        clientId = cid;
+                                        self._server.process(message, false, function(replies) {
+                                                        if (ws) ws.send(echtzeit.toJSON(replies));
+                                                });
+                                } catch (e) {
+                                        self.error(e.message + '\nBacktrace:\n' + e.stack);
+                                }
+                        };
+                        ws.onclose = function(event) {
+                                self._server.closeSocket(clientId);
+                                ws = null;
+                        };
+                },
+                handleEventSource: function(request, response) {
+                        var es = new echtzeit.EventSource(request, response, {
+                                        ping: this._options.ping
+                                }),
+                                clientId = es.url.split('/').pop(),
+                                self = this;
+                        this.debug('Opened EventSource connection for ?', clientId);
+                        this._server.openSocket(clientId, es);
+                        es.onclose = function(event) {
+                                self._server.closeSocket(clientId);
+                                es = null;
+                        };
                 },
                 _handleOptions: function(request, response) {
                         var headers = {
@@ -199,8 +189,17 @@ echtzeit.NodeAdapter = echtzeit.Class({
                                 'Access-Control-Allow-Headers': 'Accept, Content-Type, Pragma, X-Requested-With'
                         };
                         response.writeHead(200, headers);
-                        response.write('');
-                        response.end();
+                        response.end('');
+                },
+                _formatRequest: function(request) {
+                        var method = request.method.toUpperCase(),
+                                string = 'curl -X ' + method;
+                        string += " 'http://" + request.headers.host + request.url + "'";
+                        if (method === 'POST') {
+                                string += " -H 'Content-Type: " + request.headers['content-type'] + "'";
+                                string += " -d '" + request.body + "'";
+                        }
+                        return string;
                 },
                 _returnError: function(response, error) {
                         var message = error.message;

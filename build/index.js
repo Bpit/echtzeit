@@ -4,6 +4,7 @@ _bpath = path.join(__dirname, "..", "bin");
 _clog = function () { process.stdout.write(util.format.apply(this, arguments)); }
 
 core = [
+        "_head.js"
         "echtzeit.js",
         "util/class.js",
         "util/namespace.js",
@@ -35,7 +36,8 @@ node = [
         "transport/node_http.js",
         "adapters/node_adapter.js",
         "util/streamcache.js",
-        "adapters/static_server.js"
+        "adapters/static_server.js",
+        "_tail.js"
 ];
 
 browser = [
@@ -44,7 +46,8 @@ browser = [
         "transport/event_source.js",
         "transport/xhr.js",
         "transport/cors.js",
-        "transport/jsonp.js"
+        "transport/jsonp.js",
+        "_tail.js"
 ];
 
 _gather = function (a) {

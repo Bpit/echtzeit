@@ -1,13 +1,17 @@
 echtzeit.Transport.NodeHttp = echtzeit.extend(echtzeit.Class(echtzeit.Transport, {
+                encode: function(messages) {
+                        return echtzeit.toJSON(messages);
+                },
+                
                 request: function(message, timeout) {
                         var uri = this.endpoint,
                                 secure = (uri.protocol === 'https:'),
                                 client = secure ? https : http,
-                                content = new Buffer(JSON.stringify(message), 'utf8'),
-                                retry = this.retry(message, timeout),
+                                content = new Buffer(echtzeit.toJSON(messages), 'utf8'),
+                                retry = this.retry(messages, timeout),
                                 self = this;
 
-                        var cookies = this.cookies.getCookies({
+                        var cookies = this._client.cookies.getCookies({
                                         domain: uri.hostname,
                                         path: uri.pathname
                                 }),
@@ -38,9 +42,9 @@ echtzeit.Transport.NodeHttp = echtzeit.extend(echtzeit.Class(echtzeit.Transport,
                                         'Content-Type': 'application/json',
                                         'Cookie': cookies.toValueString(),
                                         'Host': uri.host
-                                }, this.headers)
+                                }, this._client.headers)
                         };
-                        if (this.ca) params.ca = this.ca;
+                        if (this._client.ca) params.ca = this._client.ca;
                         return params;
                 },
 
@@ -73,7 +77,7 @@ echtzeit.Transport.NodeHttp = echtzeit.extend(echtzeit.Class(echtzeit.Transport,
                         var cookie;
 
                         for (var i = 0, n = cookies.length; i < n; i++) {
-                                cookie = this.cookies.setCookie(cookies[i]);
+                                cookie = this._client.cookies.setCookie(cookies[i]);
                                 cookie = cookie[0] || cookie;
                                 cookie.domain = cookie.domain || hostname;
                         }
