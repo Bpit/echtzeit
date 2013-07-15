@@ -13,7 +13,7 @@ echtzeit.Client = echtzeit.Class({
                 initialize: function(endpoint, options) {
                         this.info('New client created for ?', endpoint);
                         this._options   = options || {};
-                        this.endpoint   = endpoint || this.DEFAULT_ENDPOINT;
+                        this.endpoint   = echtzeit.URI.parse(endpoint || this.DEFAULT_ENDPOINT);
                         this.endpoints  = this._options.endpoints || {};
                         this.transports = {};
                         this._cookies   = echtzeit.CookieJar && new echtzeit.CookieJar();
@@ -21,6 +21,10 @@ echtzeit.Client = echtzeit.Class({
                         this._ca        = this._options.ca;
                         this._disabled  = [];
                         this.retry      = this._options.retry || this.DEFAULT_RETRY;
+
+                        for (var key in this.endpoints)
+                                this.endpoints[key] = Faye.URI.parse(this.endpoints[key]);
+
                         this._state     = this.UNCONNECTED;
                         this._channels  = new echtzeit.Channel.Set();
                         this._messageId = 0;
@@ -66,7 +70,7 @@ echtzeit.Client = echtzeit.Class({
                         if (this._state !== this.UNCONNECTED) return;
                         this._state = this.CONNECTING;
                         var self = this;
-                        this.info('Initiating handshake with ?', this.endpoint);
+                        this.info('Initiating handshake with ?', echtzeit.URI.stringify(this.endpoint));
                         this._selectTransport(echtzeit.MANDATORY_CONNECTION_TYPES);
                         this._send({
                                         channel: echtzeit.Channel.HANDSHAKE,
@@ -248,7 +252,7 @@ echtzeit.Client = echtzeit.Class({
                 },
                 _selectTransport: function(transportTypes) {
                         echtzeit.Transport.get(this, transportTypes, this._disabled, function(transport) {
-                                        this.debug('Selected ? transport for ?', transport.connectionType, transport.endpoint);
+                                        this.debug('Selected ? transport for ?', transport.connectionType, echtzeit.URI.stringify(transport.endpoint));
                                         if (transport === this._transport) return;
                                         if (this._transport) this._transport.close();
                                         this._transport = transport;

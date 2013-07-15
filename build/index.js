@@ -7,6 +7,8 @@ core = [
         "echtzeit.js",
         "util/class.js",
         "util/namespace.js",
+        "util/promise",
+        "util/uri",
         "error.js",
         "mixins/deferrable.js",
         "mixins/publisher.js",
@@ -38,7 +40,6 @@ node = [
 
 browser = [
         "util/browser/event.js",
-        "util/browser/uri.js",
         "transport/web_socket.js",
         "transport/event_source.js",
         "transport/xhr.js",

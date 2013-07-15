@@ -4,7 +4,7 @@ echtzeit.Transport.CORS = echtzeit.extend(echtzeit.Class(echtzeit.Transport, {
                                         xhr = new xhrClass(),
                                         retry = this.retry(message, timeout),
                                         self = this;
-                                xhr.open('POST', this.endpoint, true);
+                                xhr.open('POST', echtzeit.URI.stringify(this.endpoint), true);
                                 if (xhr.setRequestHeader) xhr.setRequestHeader('Pragma', 'no-cache');
                                 var cleanUp = function () {
                                         if (!xhr) return false;
@@ -40,11 +40,11 @@ echtzeit.Transport.CORS = echtzeit.extend(echtzeit.Class(echtzeit.Transport, {
                         }
                 }), {
                 isUsable: function (client, endpoint, callback, context) {
-                        if (echtzeit.URI.parse(endpoint).isSameOrigin())
+                        if (echtzeit.isSameOrigin(endpoint))
                                 return callback.call(context, false);
                         if (echtzeit.ENV.XDomainRequest)
-                                return callback.call(context, echtzeit.URI.parse(endpoint).protocol ===
-                                        echtzeit.URI.parse(echtzeit.ENV.location).protocol);
+                                return callback.call(context, endpoint.protocol ===
+                                        echtzeit.ENV.location.protocol);
                         if (echtzeit.ENV.XMLHttpRequest) {
                                 var xhr = new echtzeit.ENV.XMLHttpRequest();
                                 return callback.call(context, xhr.withCredentials !== undefined);

@@ -1,22 +1,22 @@
 echtzeit.Transport.JSONP = echtzeit.extend(echtzeit.Class(echtzeit.Transport, {
                         shouldFlush: function (messages) {
-                                var params = {
-                                        message: echtzeit.toJSON(messages),
-                                        jsonp: '__jsonp' + echtzeit.Transport.JSONP._cbCount + '__'
-                                };
-                                var location = echtzeit.URI.parse(this.endpoint, params).toURL();
-                                return location.length >= echtzeit.Transport.MAX_URL_LENGTH;
+                                var endpoint = echtzeit.copyObject(this.endpoint);
+                                endpoint.query.message = echtzeit.toJSON(messages);
+                                endpoint.query.jsonp   = '__jsonp' + echtzeit.Transport.JSONP._cbCount + '__';
+                                var url = echtzeit.URI.stringify(endpoint);
+                                return url.length >= echtzeit.Transport.MAX_URL_LENGTH;
                         },
                         request: function (messages, timeout) {
-                                var params = {
-                                        message: echtzeit.toJSON(messages)
-                                },
-                                        head = document.getElementsByTagName('head')[0],
+                                var     head = document.getElementsByTagName('head')[0],
                                         script = document.createElement('script'),
                                         callbackName = echtzeit.Transport.JSONP.getCallbackName(),
-                                        location = echtzeit.URI.parse(this.endpoint, params),
+                                        endpoint     = echtzeit.copyObject(this.endpoint),
                                         retry = this.retry(messages, timeout),
                                         self = this;
+
+                                endpoint.query.message = echtzeit.toJSON(messages);
+                                endpoint.query.jsonp   = callbackName;
+
                                 echtzeit.ENV[callbackName] = function (data) {
                                         cleanUp();
                                         self.receive(data);
@@ -39,7 +39,7 @@ echtzeit.Transport.JSONP = echtzeit.extend(echtzeit.Class(echtzeit.Transport, {
                                 };
                                 location.params.jsonp = callbackName;
                                 script.type = 'text/javascript';
-                                script.src = location.toURL();
+                                script.src = echtzeit.URI.stringify(endpoint);
                                 head.appendChild(script);
                         }
                 }), {

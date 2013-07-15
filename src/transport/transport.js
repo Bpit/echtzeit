@@ -9,7 +9,7 @@ echtzeit.Transport = echtzeit.extend(echtzeit.Class({
                         close: function () {},
                         send: function (message, timeout) {
                                 this.debug('Client ? sending message to ?: ?',
-                                        this._client._clientId, this.endpoint, message);
+                                        this._client._clientId, echtzeit.URI.stringify(this.endpoint), message);
                                 if (!this.batching) return this.request([message], timeout);
                                 this._outbox.push(message);
                                 this._timeout = timeout;
@@ -33,7 +33,7 @@ echtzeit.Transport = echtzeit.extend(echtzeit.Class({
                         },
                         receive: function (responses) {
                                 this.debug('Client ? received from ?: ?',
-                                        this._client._clientId, this.endpoint, responses);
+                                        this._client._clientId, echtzeit.URI.stringify(this.endpoint), message);
                                 for (var i = 0, n = responses.length; i < n; i++) {
                                         this._client.receiveMessage(responses[i]);
                                 }
@@ -70,7 +70,7 @@ echtzeit.Transport = echtzeit.extend(echtzeit.Class({
                                                         callback.call(context, transport);
                                                 });
                                 }, function () {
-                                        throw new Error('Could not find a usable connection type for ' + endpoint);
+                                        throw new Error('Could not find a usable connection type for ' + echtzeit.URI.stringify(this.endpoint));
                                 });
                 },
                 register: function (type, klass) {

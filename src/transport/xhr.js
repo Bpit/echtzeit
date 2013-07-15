@@ -1,7 +1,7 @@
 echtzeit.Transport.XHR = echtzeit.extend(echtzeit.Class(echtzeit.Transport, {
                         request: function(message, timeout) {
                                 var retry = this.retry(message, timeout),
-                                        path = echtzeit.URI.parse(this.endpoint).pathname,
+                                        path = this.endpoint.path,
                                         self = this,
                                         xhr = echtzeit.ENV.ActiveXObject ? new ActiveXObject("Microsoft.XMLHTTP") : new XMLHttpRequest();
 
@@ -61,7 +61,7 @@ echtzeit.Transport.XHR = echtzeit.extend(echtzeit.Class(echtzeit.Transport, {
                         }
                 }), {
                 isUsable: function(client, endpoint, callback, context) {
-                        callback.call(context, echtzeit.URI.parse(endpoint).isSameOrigin());
+                        callback.call(context, echtzeit.URI.isSameOrigin(endpoint));
                 }
         });
 
