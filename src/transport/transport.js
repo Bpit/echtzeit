@@ -42,7 +42,7 @@ echtzeit.Transport = echtzeit.extend(echtzeit.Class({
                         },
                         receive: function (responses) {
                                 this.debug('Client ? received from ?: ?',
-                                        this._client._clientId, echtzeit.URI.stringify(this.endpoint), message);
+                                        this._client._clientId, echtzeit.URI.stringify(this.endpoint), responses);
                                 for (var i = 0, n = responses.length; i < n; i++) {
                                         this._client.receiveMessage(responses[i]);
                                 }
