@@ -53,7 +53,7 @@ echtzeit.Transport.CORS = echtzeit.extend(echtzeit.Class(echtzeit.Transport, {
                         }
                 }), {
                 isUsable: function (client, endpoint, callback, context) {
-                        if (echtzeit.isSameOrigin(endpoint))
+                        if (echtzeit.URI.isSameOrigin(endpoint))
                                 return callback.call(context, false);
                         if (echtzeit.ENV.XDomainRequest)
                                 return callback.call(context, endpoint.protocol ===
