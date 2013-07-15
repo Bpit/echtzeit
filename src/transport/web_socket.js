@@ -122,6 +122,7 @@ echtzeit.Transport.WebSocket = echtzeit.extend(echtzeit.Class(echtzeit.Transport
         },
 
         create: function(client, endpoint) {
+                var sockets = client.transports.websocket = client.transports.websocket || {};
                 sockets[endpoint.href] = sockets[endpoint.href] || new this(client, endpoint);
                 return sockets[endpoint.href];
         }
