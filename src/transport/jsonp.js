@@ -22,21 +22,20 @@ echtzeit.Transport.JSONP = echtzeit.extend(echtzeit.Class(echtzeit.Transport, {
                                         self.trigger('up');
                                 };
                                 var timer = echtzeit.ENV.setTimeout(function () {
-                                                cleanUp();
-                                                retry();
-                                                self.trigger('down');
-                                        }, 1.5 * 1000 * timeout);
-                                var cleanUp = function () {
+                                        cleanUp();
+                                        retry();
+                                        self.trigger('down');
+                                }, 1.5 * 1000 * timeout);
+                                
+                                var cleanUp = function() {
                                         if (!echtzeit.ENV[callbackName]) return false;
                                         echtzeit.ENV[callbackName] = undefined;
-                                        try {
-                                                delete echtzeit.ENV[callbackName]
-                                        } catch (e) {}
+                                        try { delete echtzeit.ENV[callbackName] } catch (e) {}
                                         echtzeit.ENV.clearTimeout(timer);
                                         script.parentNode.removeChild(script);
                                         return true;
                                 };
-                                location.params.jsonp = callbackName;
+
                                 script.type = 'text/javascript';
                                 script.src = echtzeit.URI.stringify(endpoint);
                                 head.appendChild(script);
