@@ -4,12 +4,12 @@ _bpath = path.join(__dirname, "..", "bin");
 _clog = function () { process.stdout.write(util.format.apply(this, arguments)); }
 
 core = [
-        "_head.js"
+        "_head.js",
         "echtzeit.js",
         "util/class.js",
         "util/namespace.js",
-        "util/promise",
-        "util/uri",
+        "util/promise.js",
+        "util/uri.js",
         "error.js",
         "mixins/deferrable.js",
         "mixins/publisher.js",

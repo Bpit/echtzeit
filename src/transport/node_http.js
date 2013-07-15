@@ -27,8 +27,7 @@ echtzeit.Transport.NodeHttp = echtzeit.extend(echtzeit.Class(echtzeit.Transport,
                                         retry();
                                         self.trigger('down');
                                 });
-                        request.write(content);
-                        request.end();
+                        request.end(content);
                 },
 
                 _buildParams: function(uri, content, cookies, secure) {

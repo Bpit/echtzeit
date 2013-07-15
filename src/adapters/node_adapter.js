@@ -134,8 +134,7 @@ echtzeit.NodeAdapter = echtzeit.Class({
                                                 headers['Connection'] = 'close';
                                                 this.debug('HTTP response: ?', body);
                                                 response.writeHead(200, headers);
-                                                response.write(body);
-                                                response.end();
+                                                response.end(body);
                                         }, this);
                         } catch (error) {
                                 this._returnError(response, error);
@@ -207,8 +206,7 @@ echtzeit.NodeAdapter = echtzeit.Class({
                         this.error(message);
                         if (!response) return;
                         response.writeHead(400, this.TYPE_TEXT);
-                        response.write('Bad request');
-                        response.end();
+                        response.end('Bad request');
                 }
         });
 echtzeit.extend(echtzeit.NodeAdapter.prototype, echtzeit.Logging);
