@@ -135,7 +135,7 @@ var echtzeit = {
 
         toJSON: function(object) {
                 return JSON.stringify(object, function(key, value) {
-                                return (this[key] instanceof Array) ? this[key] : value;
-                        });
+                        return (this[key] instanceof Array) ? this[key] : value;
+                });
         }
 };
