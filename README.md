@@ -10,10 +10,58 @@ Issues [![Build Status](https://travis-ci.org/Legify/echtzeit.png)](https://trav
 
 Feel free to open an issue if you think anything specific to this fork should be discussed. PRs are welcome. See the above notice if you have questions regarding *echtzeit*.
 
+
 Installation
 ------------
 
   `npm install echtzeit`
+
+Usage
+------------
+
+	With the recent changes echtzeit and Faye, the engine will only listen if it is attached to an arbitrary server. Where echtzeit.listen was used, create a new server [var srv = (http/https).createServer()], attach an initialized instance [var ez = new echtzeit.NodeAdapter({mount: '/', timeout: 45})] to the server with [ez.attach(srv)] and finally listen to a port by [srv.listen(…)].
+
+*Echtzeit* makes it easy to kickstart your realtime environment by providing an abstraction layer which covers all transport-ways you love including WebSocket, JSONP, Polling and XHR. *Echtzeit* is adaptive and implements an intelligent extension system.
+
+You kickstart the *echtzeit* engine by initializing it and attaching it to an arbitrary server of your choice — including *http*, *https* and *spdy*.
+
+	var echtzeit = require("echtzeit"),
+	ez = new echtzeit.NodeAdapter({mount: '/app', timeout: 45});
+
+The mountpoint makes it easy to attach to a server without disrupting its functions or service.
+
+	var srv = http.Server(); ez.attach(srv); srv.listen(643);
+
+If you power it up and head to `http://127.0.0.1:643/app/client.js` you'll see *echtzeit*'s client library — which also implies *echtzeit* is working.
+
+This is great! Let's listen to a channel and ditch that rocket-science degree:
+
+	ez.getClient().subscribe("/public", function ( message ) { });
+
+We're using *echtzeit*'s internal client for the server which gets rid of all the initialization clutter we would might face. Great so far, let's get started with the userland.
+
+This ain't rocket-science, too: just include the client library and use the same way to connect to *echtzeit*.
+
+	<script type="text/javascript" src="http://127.0.0.1:643/app/client.js"></script>
+	<script type="text/javascript">
+		var ez = new echtzeit.Client('http://127.0.0.1:643/srv');
+	</script>
+
+Now listen on a channel and you're ready to go:
+
+	ez.subscribe('/public', function( message ) { alert( message.text ) });
+
+Go ahead, open some windows and type this into the console of one window:
+
+	ez.publish("/public", {
+		text: "Hey, friends!"
+	});
+
+You can do the plain same on the server:
+
+	ez.getClient().publish('/public', {
+		text: "Hey, friends!"
+	});
 
 License
 ------------
