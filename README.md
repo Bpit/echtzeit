@@ -5,12 +5,6 @@ Echtzeit is a highly optimized toolset for pub/sub messaging between web clients
 
 This is an enterprise fork of Faye, please see http://faye.jcoglan.com for further information on the general purpose toolset with Ruby/Rack support. However, we endorse any *business to business* dialog and are open for support at `kenan@legify.com` — please include information about the company you represent and the purpose of your *echtzeit* integration.
 
-Issues [![Build Status](https://travis-ci.org/Legify/echtzeit.png)](https://travis-ci.org/Legify/echtzeit)
-------------
-
-Feel free to open an issue if you think anything specific to this fork should be discussed. PRs are welcome. See the above notice if you have questions regarding *echtzeit*.
-
-
 Installation
 ------------
 
@@ -58,6 +52,11 @@ Go ahead, open some windows and type this into the console of one window:
 You can do the plain same on the server:
 
 	ez.getClient().publish('/public', { text: "Hey, friends!" });
+
+Issues [![Build Status](https://travis-ci.org/Legify/echtzeit.png)](https://travis-ci.org/Legify/echtzeit)
+------------
+
+Feel free to open an issue if you think anything specific to this fork should be discussed. PRs are welcome. See the above notice if you have questions regarding *echtzeit*.
 
 License
 ------------
