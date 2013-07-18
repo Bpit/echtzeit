@@ -38,7 +38,7 @@ This ain't rocket-science, too: just include the client library and use the same
 
 	<script type="text/javascript" src="http://127.0.0.1:643/app/client.js"></script>
 	<script type="text/javascript">
-		var ez = new echtzeit.Client('http://127.0.0.1:643/srv');
+		var ez = new echtzeit.Client('http://127.0.0.1:643/app');
 	</script>
 
 Now listen on a channel and you're ready to go:
