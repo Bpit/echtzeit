@@ -53,15 +53,11 @@ Now listen on a channel and you're ready to go:
 
 Go ahead, open some windows and type this into the console of one window:
 
-	ez.publish("/public", {
-		text: "Hey, friends!"
-	});
+	ez.publish("/public", { text: "Hey, friends!" });
 
 You can do the plain same on the server:
 
-	ez.getClient().publish('/public', {
-		text: "Hey, friends!"
-	});
+	ez.getClient().publish('/public', { text: "Hey, friends!" });
 
 License
 ------------
