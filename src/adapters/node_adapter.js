@@ -129,7 +129,7 @@ echtzeit.NodeAdapter = echtzeit.Class({
                         headers['Cache-Control'] = 'no-cache, no-store';
                         this._server.process(message, false, function(replies) {
                                 var body = JSON.stringify(replies);
-                                if (isGet) body = jsonp + '(' + body + ');';
+                                if (isGet) body = jsonp + '(' + body.replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029') + ');';
                                 headers['Content-Length'] = new Buffer(body, 'utf8').length.toString();
                                 headers['Connection'] = 'close';
                                 this.debug('HTTP response: ?', body);
