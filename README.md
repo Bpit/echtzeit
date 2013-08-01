@@ -5,12 +5,6 @@ Echtzeit is a highly optimized toolset for pub/sub messaging between web clients
 
 This is an enterprise fork of Faye, please see http://faye.jcoglan.com for further information on the general purpose toolset with Ruby/Rack support. However, we endorse any *business to business* dialog and are open for support at `kenan@legify.com` — please include information about the company you represent and the purpose of your *echtzeit* integration.
 
-Issues [![Build Status](https://travis-ci.org/Legify/echtzeit.png)](https://travis-ci.org/Legify/echtzeit)
-------------
-
-Feel free to open an issue if you think anything specific to this fork should be discussed. PRs are welcome. See the above notice if you have questions regarding *echtzeit*.
-
-
 Installation
 ------------
 
@@ -44,7 +38,7 @@ This ain't rocket-science, too: just include the client library and use the same
 
 	<script type="text/javascript" src="http://127.0.0.1:643/app/client.js"></script>
 	<script type="text/javascript">
-		var ez = new echtzeit.Client('http://127.0.0.1:643/srv');
+		var ez = new echtzeit.Client('http://127.0.0.1:643/app');
 	</script>
 
 Now listen on a channel and you're ready to go:
@@ -53,15 +47,16 @@ Now listen on a channel and you're ready to go:
 
 Go ahead, open some windows and type this into the console of one window:
 
-	ez.publish("/public", {
-		text: "Hey, friends!"
-	});
+	ez.publish("/public", { text: "Hey, friends!" });
 
 You can do the plain same on the server:
 
-	ez.getClient().publish('/public', {
-		text: "Hey, friends!"
-	});
+	ez.getClient().publish('/public', { text: "Hey, friends!" });
+
+Issues [![Build Status](https://travis-ci.org/Legify/echtzeit.png)](https://travis-ci.org/Legify/echtzeit)
+------------
+
+Feel free to open an issue if you think anything specific to this fork should be discussed. PRs are welcome. See the above notice if you have questions regarding *echtzeit*.
 
 License
 ------------
