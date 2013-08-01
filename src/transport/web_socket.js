@@ -15,26 +15,13 @@ echtzeit.Transport.WebSocket = echtzeit.extend(echtzeit.Class(echtzeit.Transport
                 this.connect();
         },
 
-        request: function(messages, timeout) {
-                if (messages.length === 0) return;
-                this._messages = this._messages || {};
-
-                for (var i = 0, n = messages.length; i < n; i++) {
-                        this._messages[messages[i].id] = messages[i];
-                }
-                this.callback(function(socket) {
-                        socket && socket.send(echtzeit.toJSON(messages))
-                });
+        request: function(messages) {
+                this.callback(function() {
+                        if (!this._socket) return;
+                        for (var i = 0, n = messages.length; i < n; i++) this._pending.add(messages[i]);
+                        this._socket.send(Faye.toJSON(messages));
+                }, this);
                 this.connect();
-        },
-
-        close: function() {
-                if (!this._socket) return;
-                this._socket.onclose = this._socket.onerror = null;
-                this._socket.close();
-                delete this._socket;
-                this.setDeferredStatus('deferred');
-                this._state = this.UNCONNECTED;
         },
 
         connect: function() {
@@ -45,61 +32,70 @@ echtzeit.Transport.WebSocket = echtzeit.extend(echtzeit.Class(echtzeit.Transport
 
                 this._state = this.CONNECTING;
 
-                var ws = echtzeit.Transport.WebSocket.getClass();
-                if (!ws) return this.setDeferredStatus('failed');
-
-                var url = echtzeit.Transport.WebSocket.getSocketUrl(this.endpoint),
-                        options = {
-                                headers: this._client.headers,
-                                ca: this._client.ca
-                        };
-
-                this._socket = echtzeit.WebSocket ? new ws(url, [], options) : new ws(url);
+                var socket = this._createSocket();
+                if (!socket) return this.setDeferredStatus('failed');
 
                 var self = this;
 
-                this._socket.onopen = function() {
+                socket.onopen = function() {
+                        self._socket = socket;
+                        self._pending = new echtzeit.Set();
                         self._state = self.CONNECTED;
                         self._everConnected = true;
-                        self.setDeferredStatus('succeeded', self._socket);
-                        self.trigger('up');
+                        self._ping();
                 };
 
-                this._socket.onmessage = function(event) {
+                socket.onclose = socket.onerror = function() {
+                        if (!socket.onclose) return;
+
+                        var wasConnected = (self._state === self.CONNECTED);
+                        socket.onopen = socket.onclose = socket.onerror = socket.onmessage = null;
+
+                        delete self._socket;
+                        self._state = self.UNCONNECTED;
+                        self.removeTimeout('ping');
+                        self.setDeferredStatus('deferred');
+
+                        if (wasConnected) {
+                                if (self._pending) self._client.messageError(self._pending.toArray(), true);
+                        } else if (self._everConnected) {
+                                if (self._pending) self._client.messageError(self._pending.toArray());
+                        } else {
+                                self.setDeferredStatus('failed');
+                        }
+                        delete self._pending;
+                };
+
+                socket.onmessage = function(event) {
                         var messages = JSON.parse(event.data);
                         if (!messages) return;
                         messages = [].concat(messages);
 
                         for (var i = 0, n = messages.length; i < n; i++) {
-                                delete self._messages[messages[i].id];
+                                if (messages[i].successful !== undefined) self._pending.remove(messages[i]);
                         }
                         self.receive(messages);
                 };
 
-                this._socket.onclose = this._socket.onerror = function() {
-                        var wasConnected = (self._state === self.CONNECTED);
-                        self.setDeferredStatus('deferred');
-                        self._state = self.UNCONNECTED;
-
-                        self.close();
-
-                        if (wasConnected) return self.resend();
-                        if (!self._everConnected) return self.setDeferredStatus('failed');
-
-                        var retry = self._client.retry * 1000;
-                        echtzeit.ENV.setTimeout(function() {
-                                self.connect()
-                        }, retry);
-                        self.trigger('down');
+                close: function() {
+                        if (!this._socket) return;
+                        this._socket.close();
                 };
         },
 
-        resend: function() {
-                if (!this._messages) return;
-                var messages = echtzeit.map(this._messages, function(id, msg) {
-                        return msg
-                });
-                this.request(messages);
+        _createSocket: function() {
+                var url     = echtzeit.Transport.WebSocket.getSocketUrl(this.endpoint),
+                    options = {headers: this._client.headers, ca: this._client.ca};
+
+                if (echtzeit.WebSocket)        return new Faye.WebSocket.Client(url, [], options);
+                if (echtzeit.ENV.MozWebSocket) return new MozWebSocket(url);
+                if (echtzeit.ENV.WebSocket)    return new WebSocket(url);
+        },
+
+        _ping: function() {
+                if (!this._socket) return;
+                this._socket.send('[]');
+                this.addTimeout('ping', this._client._advice.timeout/2000, this._ping, this);
         }
 }), {
 
@@ -108,26 +104,20 @@ echtzeit.Transport.WebSocket = echtzeit.extend(echtzeit.Class(echtzeit.Transport
                 'https:': 'wss:'
         },
 
+        create: function(client, endpoint) {
+                var sockets = client.transports.websocket = client.transports.websocket || {};
+                sockets[endpoint.href] = sockets[endpoint.href] || new this(client, endpoint);
+                return sockets[endpoint.href];
+        },
+
         getSocketUrl: function(endpoint) {
                 endpoint = echtzeit.copyObject(endpoint);
                 endpoint.protocol = this.PROTOCOLS[endpoint.protocol];
                 return echtzeit.URI.stringify(endpoint);
         },
 
-        getClass: function() {
-                return (echtzeit.WebSocket && echtzeit.WebSocket.Client) ||
-                        echtzeit.ENV.WebSocket ||
-                        echtzeit.ENV.MozWebSocket;
-        },
-
         isUsable: function(client, endpoint, callback, context) {
                 this.create(client, endpoint).isUsable(callback, context);
-        },
-
-        create: function(client, endpoint) {
-                var sockets = client.transports.websocket = client.transports.websocket || {};
-                sockets[endpoint.href] = sockets[endpoint.href] || new this(client, endpoint);
-                return sockets[endpoint.href];
         }
 });
 

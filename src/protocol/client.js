@@ -21,7 +21,7 @@ echtzeit.Client = echtzeit.Class({
                         this.headers   = {};
                         this.ca        = this._options.ca;
                         this._disabled  = [];
-                        this.retry      = this._options.retry || this.DEFAULT_RETRY;
+                        this._retry     = this._options.retry || this.DEFAULT_RETRY;
 
                         for (var key in this.endpoints)
                                 this.endpoints[key] = echtzeit.URI.parse(this.endpoints[key]);
@@ -31,6 +31,7 @@ echtzeit.Client = echtzeit.Class({
                         this._state     = this.UNCONNECTED;
                         this._channels  = new echtzeit.Channel.Set();
                         this._messageId = 0;
+                        this._messageTimeouts   = {};
                         this._responseCallbacks = {};
                         this._advice    = {
                                 reconnect: this.RETRY,
@@ -141,7 +142,9 @@ echtzeit.Client = echtzeit.Class({
                                         channel: echtzeit.Channel.DISCONNECT,
                                         clientId: this._clientId
                                 }, function(response) {
-                                        if (response.successful) this._transport.close();
+                                        if (!response.successful) return;
+                                        this._transport.close();
+                                        delete this._transport;
                                 }, this);
                         this.info('Clearing channel listeners for ?', this._clientId);
                         this._channels = new echtzeit.Channel.Set();
@@ -242,42 +245,85 @@ echtzeit.Client = echtzeit.Class({
                         return publication;
                 },
                 receiveMessage: function(message) {
+                        var id = message.id, timeout, callback;
+                        
+                        if (message.successful !== undefined) {
+                                timeout = this._messageTimeouts[id];
+                        
+                                timeout && echtzeit.ENV.clearTimeout(timeout);
+                        
+                                delete this._messageTimeouts[id];
+                        
+                                callback = this._responseCallbacks[id];
+                                delete this._responseCallbacks[id];
+                        }
+
                         this.pipeThroughExtensions('incoming', message, function(message) {
-                                        if (!message) return;
-                                        if (message.advice) this._handleAdvice(message.advice);
-                                        this._deliverMessage(message);
-                                        if (message.successful === undefined) return;
-                                        var callback = this._responseCallbacks[message.id];
-                                        if (!callback) return;
-                                        delete this._responseCallbacks[message.id];
-                                        callback[0].call(callback[1], message);
-                                }, this);
+                                if (!message) return;
+
+                                if (message.advice) this._handleAdvice(message.advice);
+                                this._deliverMessage(message);
+
+                                if (callback) callback[0].call(callback[1], message);
+                        }, this);
+
+                        if (this._transportUp === true) return;
+                        this._transportUp = true;
+                        this.trigger('transport:up');
+                },
+                messageError: function(messages, immediate) {
+                        var retry = this._retry,
+                             self = this,
+                             id, message, timeout;
+
+                        for (var i = 0, n = messages.length; i < n; i++) {
+                                message = messages[i];
+                                id = message.id;
+
+                                timeout = this._messageTimeouts[id];
+                                if (timeout) echtzeit.ENV.clearTimeout(timeout);
+                                delete this._messageTimeouts[id];
+
+                                if (immediate)
+                                        this._transportSend(message);
+                                else
+                                        echtzeit.ENV.setTimeout(function() {
+                                                self._transportSend(message)
+                                        }, retry * 1000);
+                        }
+
+                        if (immediate || this._transportUp === false) return;
+                        this._transportUp = false;
+                        this.trigger('transport:down');
                 },
                 _selectTransport: function(transportTypes) {
                         echtzeit.Transport.get(this, transportTypes, this._disabled, function(transport) {
-                                        this.debug('Selected ? transport for ?', transport.connectionType, echtzeit.URI.stringify(transport.endpoint));
-                                        if (transport === this._transport) return;
-                                        if (this._transport) this._transport.close();
-                                        this._transport = transport;
-                                        transport.bind('down', function() {
-                                                        if (this._transportUp !== undefined && !this._transportUp) return;
-                                                        this._transportUp = false;
-                                                        this.trigger('transport:down');
-                                                }, this);
-                                        transport.bind('up', function() {
-                                                        if (this._transportUp !== undefined && this._transportUp) return;
-                                                        this._transportUp = true;
-                                                        this.trigger('transport:up');
-                                                }, this);
-                                }, this);
+                                this.debug('Selected ? transport for ?', transport.connectionType, echtzeit.URI.stringify(transport.endpoint));
+                                if (transport === this._transport) return;
+                                if (this._transport) this._transport.close();
+                                this._transport = transport;
+                        }, this);
                 },
                 _send: function(message, callback, context) {
-                        message.id = this._generateMessageId();
-                        if (callback) this._responseCallbacks[message.id] = [callback, context];
+                        if (!this._transport) return;
+                        message.id = message.id || this._generateMessageId();
                         this.pipeThroughExtensions('outgoing', message, function(message) {
-                                        if (!message) return;
-                                        this._transport.send(message, this._advice.timeout / 1000);
-                                }, this);
+                                if (!message) return;
+                                if (callback) this._responseCallbacks[message.id] = [callback, context];
+                                this._transportSend(message);
+                        }, this);
+                },
+                _transportSend: function(message) {
+                        if (!this._transport) return;
+
+                        var timeout = 1.2 * (this._advice.timeout || this._retry * 1000),
+                                self = this;
+
+                        this._messageTimeouts[message.id] = echtzeit.ENV.setTimeout(function() {
+                                self.messageError([message], false);
+                        }, timeout);
+
+                        this._transport.send(message);
                 },
                 _generateMessageId: function() {
                         this._messageId += 1;
@@ -297,13 +343,11 @@ echtzeit.Client = echtzeit.Class({
                         this.info('Client ? calling listeners for ? with ?', this._clientId, message.channel, message.data);
                         this._channels.distributeMessage(message);
                 },
-                _teardownConnection: function() {
-                        if (!this._connectRequest) return;
-                        this._connectRequest = null;
-                        this.info('Closed connection for ?', this._clientId);
-                },
                 _cycleConnection: function() {
-                        this._teardownConnection();
+                        if (this._connectRequest) {
+                                this._connectRequest = null;
+                                this.info('Closed connection for ?', this._clientId);
+                        }
                         var self = this;
                         echtzeit.ENV.setTimeout(function() {
                                         self.connect()

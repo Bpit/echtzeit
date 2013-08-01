@@ -9,6 +9,7 @@ core = [
         "util/class.js",
         "util/namespace.js",
         "util/promise.js",
+        "util/set.js",
         "util/uri.js",
         "error.js",
         "mixins/deferrable.js",
@@ -25,7 +26,6 @@ core = [
 ];
 
 node = [
-        "util/set.js",
         "engines/proxy.js",
         "engines/connection.js",
         "engines/memory.js",

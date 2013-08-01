@@ -154,7 +154,7 @@ echtzeit.NodeAdapter = echtzeit.Class({
                                 var message = JSON.parse(event.data),
                                         cid = echtzeit.clientIdFromMessages(message);
 
-                                if (clientId && cid !== clientId) self._server.closeSocket(clientId);
+                                if (clientId && cid && cid !== clientId) self._server.closeSocket(clientId);
                                 self._server.openSocket(cid, ws);
                                 clientId = cid;
 

@@ -1,6 +1,6 @@
 echtzeit.Transport.NodeLocal = echtzeit.extend(echtzeit.Class(echtzeit.Transport, {
         batching: false,
-        request: function(messages, timeout) {
+        request: function(messages) {
                 messages = echtzeit.copyObject(messages);
                 this.endpoint.process(messages, true, function(responses) {
                         this.receive(echtzeit.copyObject(responses));

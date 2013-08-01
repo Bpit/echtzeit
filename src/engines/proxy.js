@@ -50,7 +50,6 @@ echtzeit.Engine.Proxy = echtzeit.Class({
                         delete this._connections[clientId];
                 },
                 openSocket: function(clientId, socket) {
-                        if (!clientId) return;
                         var conn = this.connection(clientId, true);
                         conn.socket = socket;
                 },

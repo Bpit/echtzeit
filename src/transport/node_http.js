@@ -3,12 +3,11 @@ echtzeit.Transport.NodeHttp = echtzeit.extend(echtzeit.Class(echtzeit.Transport,
                         return echtzeit.toJSON(messages);
                 },
                 
-                request: function(message, timeout) {
+                request: function(message) {
                         var uri = this.endpoint,
                                 secure = (uri.protocol === 'https:'),
                                 client = secure ? https : http,
                                 content = new Buffer(echtzeit.toJSON(messages), 'utf8'),
-                                retry = this.retry(messages, timeout),
                                 self = this;
 
                         var cookies = this._client.cookies.getCookies({
@@ -19,13 +18,12 @@ echtzeit.Transport.NodeHttp = echtzeit.extend(echtzeit.Class(echtzeit.Transport,
                                 request = client.request(params);
 
                         request.addListener('response', function(response) {
-                                        self._handleResponse(response, retry);
+                                        self._handleResponse(response, messages);
                                         self._storeCookies(uri.hostname, response.headers['set-cookie']);
                                 });
 
                         request.addListener('error', function() {
-                                        retry();
-                                        self.trigger('down');
+                                        self._client.messageError(messages);
                                 });
                         request.end(content);
                 },
@@ -47,7 +45,7 @@ echtzeit.Transport.NodeHttp = echtzeit.extend(echtzeit.Class(echtzeit.Transport,
                         return params;
                 },
 
-                _handleResponse: function(response, retry) {
+                _handleResponse: function(response, messages) {
                         var message = null,
                                 body = '',
                                 self = this;
@@ -61,13 +59,10 @@ echtzeit.Transport.NodeHttp = echtzeit.extend(echtzeit.Class(echtzeit.Transport,
                                         message = JSON.parse(body);
                                 } catch (e) {}
 
-                                if (message) {
+                                if (message)
                                         self.receive(message);
-                                        self.trigger('up');
-                                } else {
-                                        retry();
-                                        self.trigger('down');
-                                }
+                                else
+                                        self._client.messageError(messages);
                         });
                 },
 
