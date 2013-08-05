@@ -7,7 +7,7 @@ core = [
         "_head.js",
         "echtzeit.js",
         "util/class.js",
-        "util/event_emitter",
+        "util/event_emitter.js",
         "util/namespace.js",
         "util/promise.js",
         "util/set.js",
