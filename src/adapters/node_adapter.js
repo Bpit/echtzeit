@@ -52,12 +52,6 @@ echtzeit.NodeAdapter = echtzeit.Class({
         removeExtension: function(extension) {
                 return this._server.removeExtension(extension);
         },
-        bind: function() {
-                return this._server._engine.bind.apply(this._server._engine, arguments);
-        },
-        unbind: function() {
-                return this._server._engine.unbind.apply(this._server._engine, arguments);
-        },
         getClient: function() {
                 return this._client = this._client || new echtzeit.Client(this._server);
         },
@@ -214,4 +208,11 @@ echtzeit.NodeAdapter = echtzeit.Class({
                 response.end('Bad request');
         }
 });
+
+for (var method in echtzeit.Publisher) (function(method) {
+        echtzeit.NodeAdapter.prototype[method] = function() {
+                return this._server._engine[method].apply(this._server._engine, arguments);
+        };
+})(method);
+
 echtzeit.extend(echtzeit.NodeAdapter.prototype, echtzeit.Logging);
