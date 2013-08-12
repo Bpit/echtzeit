@@ -76,11 +76,11 @@ echtzeit.Transport.WebSocket = echtzeit.extend(echtzeit.Class(echtzeit.Transport
                         }
                         self.receive(messages);
                 };
+        },
 
-                close: function() {
-                        if (!this._socket) return;
-                        this._socket.close();
-                };
+        close: function() {
+                if (!this._socket) return;
+                this._socket.close();
         },
 
         _createSocket: function() {

@@ -29,5 +29,5 @@ echtzeit.Publisher = {
         }
 };
 
-Faye.extend(Faye.Publisher, Faye.EventEmitter.prototype);
-Faye.Publisher.trigger = Faye.Publisher.emit;
+echtzeit.extend(echtzeit.Publisher, echtzeit.EventEmitter.prototype);
+echtzeit.Publisher.trigger = echtzeit.Publisher.emit;
