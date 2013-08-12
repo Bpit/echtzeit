@@ -5,7 +5,7 @@ echtzeit.Transport.JSONP = echtzeit.extend(echtzeit.Class(echtzeit.Transport, {
                         url.query.jsonp   = '__jsonp' + echtzeit.Transport.JSONP._cbCount + '__';
                         return echtzeit.URI.stringify(url);
                 },
-                request: function (messages,) {
+                request: function (messages) {
                         var     head = document.getElementsByTagName('head')[0],
                                 script = document.createElement('script'),
                                 callbackName = echtzeit.Transport.JSONP.getCallbackName(),

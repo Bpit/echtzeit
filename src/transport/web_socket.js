@@ -19,7 +19,7 @@ echtzeit.Transport.WebSocket = echtzeit.extend(echtzeit.Class(echtzeit.Transport
                 this.callback(function() {
                         if (!this._socket) return;
                         for (var i = 0, n = messages.length; i < n; i++) this._pending.add(messages[i]);
-                        this._socket.send(Faye.toJSON(messages));
+                        this._socket.send(echtzeit.toJSON(messages));
                 }, this);
                 this.connect();
         },

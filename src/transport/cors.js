@@ -2,7 +2,7 @@ echtzeit.Transport.CORS = echtzeit.extend(echtzeit.Class(echtzeit.Transport, {
                 encode: function (messages) {
                         return 'message=' + encodeURIComponent(echtzeit.toJSON(messages));
                 },
-                request: function (message,) {
+                request: function (message) {
                         var xhrClass = echtzeit.ENV.XDomainRequest ? XDomainRequest : XMLHttpRequest,
                                 xhr = new xhrClass(),
                                 headers  = this._client.headers,
