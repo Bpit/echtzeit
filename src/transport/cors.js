@@ -2,43 +2,49 @@ echtzeit.Transport.CORS = echtzeit.extend(echtzeit.Class(echtzeit.Transport, {
                 encode: function (messages) {
                         return 'message=' + encodeURIComponent(echtzeit.toJSON(messages));
                 },
-                request: function (message) {
+                request: function(messages) {
                         var xhrClass = echtzeit.ENV.XDomainRequest ? XDomainRequest : XMLHttpRequest,
                                 xhr = new xhrClass(),
-                                headers  = this._client.headers,
-                                self     = this,
+                                headers = this._client.headers,
+                                self = this,
                                 key;
 
                         xhr.open('POST', echtzeit.URI.stringify(this.endpoint), true);
-                        
+
                         if (xhr.setRequestHeader) {
                                 xhr.setRequestHeader('Pragma', 'no-cache');
-                                for (key in headers)
-                                        headers.hasOwnProperty(key)
-                                                && xhr.setRequestHeader(key, headers[key]);
+                                for (key in headers) {
+                                        if (!headers.hasOwnProperty(key)) continue;
+                                        xhr.setRequestHeader(key, headers[key]);
+                                }
                         }
-                        
-                        var cleanUp = function () {
+
+                        var cleanUp = function() {
                                 if (!xhr) return false;
                                 xhr.onload = xhr.onerror = xhr.ontimeout = xhr.onprogress = null;
                                 xhr = null;
                         };
-                        xhr.onload = function () {
+
+                        xhr.onload = function() {
                                 var parsedMessage = null;
                                 try {
                                         parsedMessage = JSON.parse(xhr.responseText);
                                 } catch (e) {}
+
                                 cleanUp();
+
                                 if (parsedMessage)
                                         self.receive(parsedMessage);
                                 else
                                         self._client.messageError(messages);
                         };
-                        xhr.onerror = xhr.ontimeout = function () {
+
+                        xhr.onerror = xhr.ontimeout = function() {
                                 cleanUp();
                                 self._client.messageError(messages);
                         };
-                        xhr.onprogress = function () {};
+
+                        xhr.onprogress = function() {};
                         xhr.send(this.encode(messages));
                 }
         }), {
