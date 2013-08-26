@@ -43,4 +43,4 @@ echtzeit.Event = {
         }
 };
 
-echtzeit.Event.on(echtzeit.ENV, 'unload', echtzeit.Event.detach, echtzeit.Event);
+if (echtzeit.ENV.onunload !== undefined) && echtzeit.Event.on(echtzeit.ENV, 'unload', echtzeit.Event.detach, echtzeit.Event);

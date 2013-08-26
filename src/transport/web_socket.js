@@ -16,10 +16,10 @@ echtzeit.Transport.WebSocket = echtzeit.extend(echtzeit.Class(echtzeit.Transport
         },
 
         request: function(messages) {
-                this.callback(function() {
-                        if (!this._socket) return;
+                this.callback(function(socket) {
+                        if (!socket) return;
                         for (var i = 0, n = messages.length; i < n; i++) this._pending.add(messages[i]);
-                        this._socket.send(echtzeit.toJSON(messages));
+                        socket.send(echtzeit.toJSON(messages));
                 }, this);
                 this.connect();
         },
@@ -29,7 +29,6 @@ echtzeit.Transport.WebSocket = echtzeit.extend(echtzeit.Class(echtzeit.Transport
 
                 this._state = this._state || this.UNCONNECTED;
                 if (this._state !== this.UNCONNECTED) return;
-
                 this._state = this.CONNECTING;
 
                 var socket = this._createSocket();
@@ -38,15 +37,19 @@ echtzeit.Transport.WebSocket = echtzeit.extend(echtzeit.Class(echtzeit.Transport
                 var self = this;
 
                 socket.onopen = function() {
+                        if (socket.headers) self._storeCookies(socket.headers['set-cookie']);
                         self._socket = socket;
                         self._pending = new echtzeit.Set();
                         self._state = self.CONNECTED;
                         self._everConnected = true;
                         self._ping();
+                        self.setDeferredStatus('succeeded', socket);
                 };
 
+                var closed = false;
                 socket.onclose = socket.onerror = function() {
-                        if (!socket.onclose) return;
+                        if (closed) return;
+                        closed = true;
 
                         var wasConnected = (self._state === self.CONNECTED);
                         socket.onopen = socket.onclose = socket.onerror = socket.onmessage = null;
@@ -70,7 +73,6 @@ echtzeit.Transport.WebSocket = echtzeit.extend(echtzeit.Class(echtzeit.Transport
                         var messages = JSON.parse(event.data);
                         if (!messages) return;
                         messages = [].concat(messages);
-
                         for (var i = 0, n = messages.length; i < n; i++) {
                                 if (messages[i].successful !== undefined) self._pending.remove(messages[i]);
                         }
@@ -84,21 +86,23 @@ echtzeit.Transport.WebSocket = echtzeit.extend(echtzeit.Class(echtzeit.Transport
         },
 
         _createSocket: function() {
-                var url     = echtzeit.Transport.WebSocket.getSocketUrl(this.endpoint),
-                    options = {headers: this._client.headers, ca: this._client.ca};
+                var url = echtzeit.Transport.WebSocket.getSocketUrl(this.endpoint),
+                        options = {headers: echtzeit.copyObject(this._client.headers), ca: this._client.ca};
 
-                if (echtzeit.WebSocket)        return new Faye.WebSocket.Client(url, [], options);
+                options.headers['Cookie'] = this._getCookies();
+
+                if (echtzeit.WebSocket) return new echtzeit.WebSocket.Client(url, [], options);
                 if (echtzeit.ENV.MozWebSocket) return new MozWebSocket(url);
-                if (echtzeit.ENV.WebSocket)    return new WebSocket(url);
+                if (echtzeit.ENV.WebSocket) return new WebSocket(url);
         },
 
         _ping: function() {
                 if (!this._socket) return;
                 this._socket.send('[]');
-                this.addTimeout('ping', this._client._advice.timeout/2000, this._ping, this);
+                this.addTimeout('ping', this._client._advice.timeout / 2000, this._ping, this);
         }
-}), {
 
+}), {
         PROTOCOLS: {
                 'http:': 'ws:',
                 'https:': 'wss:'

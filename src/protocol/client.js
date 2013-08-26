@@ -38,7 +38,7 @@ echtzeit.Client = echtzeit.Class({
                                 interval: 1000 * (this._options.interval || this.INTERVAL),
                                 timeout: 1000 * (this._options.timeout || this.CONNECTION_TIMEOUT)
                         };
-                        if (echtzeit.Event)
+                        if (echtzeit.Event && echtzeit.ENV.onbeforeunload !== undefined)
                                 echtzeit.Event.on(echtzeit.ENV, 'beforeunload', function() {
                                                 if (echtzeit.indexOf(this._disabled, 'autodisconnect') < 0)
                                                         this.disconnect();
