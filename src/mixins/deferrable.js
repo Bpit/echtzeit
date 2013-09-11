@@ -42,7 +42,7 @@ echtzeit.Deferrable = {
                         this._fulfill(value);
                 else if (status === 'failed')
                         this._reject(value);
-                else if (promise._state !== 0)
+                else
                         delete this._promise;
         }
 };

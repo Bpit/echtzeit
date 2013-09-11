@@ -34,6 +34,7 @@ echtzeit.NodeAdapter = echtzeit.Class({
         },
         initialize: function(options) {
                 this._options = options || {};
+                this._origins    = this._options.origins && [].concat(this._options.origins);
                 this._endpoint = this._options.mount || this.DEFAULT_ENDPOINT;
                 this._endpointRe = new RegExp('^' + this._endpoint.replace(/\/$/, '') + '(/[^/]*)*(\\.[^\\.]+)?$');
                 this._server = new echtzeit.Server(this._options);
@@ -76,22 +77,34 @@ echtzeit.NodeAdapter = echtzeit.Class({
         handle: function(request, response) {
                 var requestUrl = url.parse(request.url, true),
                         requestMethod = request.method,
+                        origin        = request.headers.origin,
                         self = this;
+
                 request.on('error', function(error) {
                         self._returnError(response, error)
                 });
+
                 response.on('error', function(error) {
                         self._returnError(null, error)
                 });
+
                 if (this._static.test(requestUrl.pathname))
                         return this._static.call(request, response);
 
+                if (this._origins && this._origins.filter(function(o) { return o.test ? o.test(origin) : o === origin }).length === 0) {
+                        response.writeHead(403, this.TYPE_TEXT);
+                        response.end('Forbidden: request origin is not authorized');
+                }
+
                 if (requestMethod === 'OPTIONS' || request.headers['access-control-request-method'] === 'POST')
-                        return this._handleOptions(request, response);
+                        return this._handleOptions(response);
+
                 if (echtzeit.EventSource.isEventSource(request))
                         return this.handleEventSource(request, response);
+
                 if (requestMethod === 'GET')
                         return this._callWithParams(request, response, requestUrl.query);
+
                 if (requestMethod === 'POST')
                         return echtzeit.withDataFor(request, function(data) {
                                 var type = (request.headers['content-type'] || '').split(';')[0],
@@ -101,6 +114,7 @@ echtzeit.NodeAdapter = echtzeit.Class({
                                 request.body = data;
                                 self._callWithParams(request, response, params);
                         });
+
                 this._returnError(response, {
                         message: 'Unrecognized request type'
                 });
@@ -178,13 +192,15 @@ echtzeit.NodeAdapter = echtzeit.Class({
                         es = null;
                 };
         },
-        _handleOptions: function(request, response) {
+        _handleOptions: function(response) {
                 var headers = {
-                        'Access-Control-Allow-Origin': '*',
-                        'Access-Control-Allow-Credentials': 'false',
-                        'Access-Control-Max-Age': '86400',
-                        'Access-Control-Allow-Methods': 'POST, GET, PUT, DELETE, OPTIONS',
-                        'Access-Control-Allow-Headers': 'Accept, Content-Type, Pragma, X-Requested-With'
+                        'Access-Control-Allow-Origin':          '*',
+                        'Access-Control-Allow-Credentials':     'false',
+                        'Access-Control-Allow-Headers':         'Accept, Content-Type, Pragma, X-Requested-With',
+                        'Access-Control-Allow-Methods':         'POST, GET, PUT, DELETE, OPTIONS',
+                        'Access-Control-Allow-Headers':         'Accept, Content-Type, Pragma, X-Requested-With',
+                        'Access-Control-Allow-Origin':          '*',
+                        'Access-Control-Max-Age':               '86400'
                 };
                 response.writeHead(200, headers);
                 response.end('');

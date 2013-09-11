@@ -117,7 +117,7 @@ echtzeit.Client = echtzeit.Class({
                         if (this._state !== this.CONNECTED) return;
                         this.info('Calling deferred actions for ?', this._clientId);
                         this.setDeferredStatus('succeeded');
-                        this.setDeferredStatus('deferred');
+                        this.setDeferredStatus('unknown');
                         if (this._connectRequest) return;
                         this._connectRequest = true;
                         this.info('Initiating connection for ?', this._clientId);
