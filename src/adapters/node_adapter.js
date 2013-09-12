@@ -198,7 +198,6 @@ echtzeit.NodeAdapter = echtzeit.Class({
                         'Access-Control-Allow-Credentials':     'false',
                         'Access-Control-Allow-Headers':         'Accept, Content-Type, Pragma, X-Requested-With',
                         'Access-Control-Allow-Methods':         'POST, GET, PUT, DELETE, OPTIONS',
-                        'Access-Control-Allow-Headers':         'Accept, Content-Type, Pragma, X-Requested-With',
                         'Access-Control-Allow-Origin':          '*',
                         'Access-Control-Max-Age':               '86400'
                 };
