@@ -15,10 +15,17 @@ echtzeit.Transport.WebSocket = echtzeit.extend(echtzeit.Class(echtzeit.Transport
                 this.connect();
         },
 
-        request: function(messages) {
+        request: function(envelopes) {
                 this.callback(function(socket) {
                         if (!socket) return;
-                        for (var i = 0, n = messages.length; i < n; i++) this._pending.add(messages[i]);
+                                
+                        for (var i = 0, n = envelopes.length; i < n; i++)
+                                this._pending.add(envelopes[i]);
+
+                        var messages = echtzeit.map(envelopes, function(e) {
+                                return e.message
+                        });
+                        
                         socket.send(echtzeit.toJSON(messages));
                 }, this);
                 this.connect();
@@ -60,9 +67,9 @@ echtzeit.Transport.WebSocket = echtzeit.extend(echtzeit.Class(echtzeit.Transport
                         self.setDeferredStatus('unknown');
 
                         if (wasConnected) {
-                                if (self._pending) self._client.messageError(self._pending.toArray(), true);
+                                if (self._pending) self.handleError(self._pending.toArray(), true);
                         } else if (self._everConnected) {
-                                if (self._pending) self._client.messageError(self._pending.toArray());
+                                if (self._pending) self.handleError(self._pending.toArray());
                         } else {
                                 self.setDeferredStatus('failed');
                         }
@@ -70,13 +77,25 @@ echtzeit.Transport.WebSocket = echtzeit.extend(echtzeit.Class(echtzeit.Transport
                 };
 
                 socket.onmessage = function(event) {
-                        var messages = JSON.parse(event.data);
-                        if (!messages) return;
+                        var messages = JSON.parse(event.data),
+                                envelopes = [],
+                                envelope;
+
+                        if (!messages)
+                                return void 0;
+
                         messages = [].concat(messages);
+
                         for (var i = 0, n = messages.length; i < n; i++) {
-                                if (messages[i].successful !== undefined) self._pending.remove(messages[i]);
+                                if (messages[i].successful === undefined)
+                                        continue;
+
+                                envelope = self._pending.remove(messages[i]);
+
+                                if (envelope) envelopes.push(envelope);
                         }
-                        self.receive(messages);
+
+                        self.receive(envelopes, messages);
                 };
         },
 

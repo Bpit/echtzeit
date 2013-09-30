@@ -1,8 +1,12 @@
 echtzeit.Transport.CORS = echtzeit.extend(echtzeit.Class(echtzeit.Transport, {
-                encode: function (messages) {
+                encode: function(envelopes) {
+                        var messages = echtzeit.map(envelopes, function(e) {
+                                return e.message
+                        });
+                
                         return 'message=' + encodeURIComponent(echtzeit.toJSON(messages));
                 },
-                request: function(messages) {
+                request: function(envelopes) {
                         var xhrClass = echtzeit.ENV.XDomainRequest ? XDomainRequest : XMLHttpRequest,
                                 xhr = new xhrClass(),
                                 headers = this._client.headers,
@@ -34,18 +38,18 @@ echtzeit.Transport.CORS = echtzeit.extend(echtzeit.Class(echtzeit.Transport, {
                                 cleanUp();
 
                                 if (parsedMessage)
-                                        self.receive(parsedMessage);
+                                        self.receive(envelopes, parsedMessage);
                                 else
-                                        self._client.messageError(messages);
+                                        self.handleError(envelopes);
                         };
 
                         xhr.onerror = xhr.ontimeout = function() {
                                 cleanUp();
-                                self._client.messageError(messages);
+                                self.handleError(envelopes);
                         };
 
                         xhr.onprogress = function() {};
-                        xhr.send(this.encode(messages));
+                        xhr.send(this.encode(envelopes));
                 }
         }), {
         isUsable: function (client, endpoint, callback, context) {

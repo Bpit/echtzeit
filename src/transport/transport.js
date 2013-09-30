@@ -7,15 +7,18 @@ echtzeit.Transport = echtzeit.extend(echtzeit.Class({
                 this._outbox = [];
         },
         close: function() {},
-        encode: function(messages) {
+        encode: function(envelopes) {
                 return '';
         },
-        send: function(message) {
+        send: function(envelope) {
+                var message = envelope.message;
+
                 this.debug('Client ? sending message to ?: ?',
                         this._client._clientId, echtzeit.URI.stringify(this.endpoint), message);
-                if (!this.batching) return this.request([message]);
 
-                this._outbox.push(message);
+                if (!this.batching) return this.request([envelope]);
+
+                this._outbox.push(envelope);
 
                 if (message.channel === echtzeit.Channel.HANDSHAKE)
                         return this.addTimeout('publish', 0.01, this.flush, this);
@@ -41,7 +44,11 @@ echtzeit.Transport = echtzeit.extend(echtzeit.Class({
                 this.flush();
                 if (last) this._outbox.push(last);
         },
-        receive: function(responses) {
+        receive: function(envelopes, responses) {
+                var n = envelopes.length;
+
+                while (n--) envelopes[n].setDeferredStatus('succeeded');
+
                 responses = [].concat(responses);
 
                 this.debug('Client ? received from ?: ?',
@@ -49,7 +56,10 @@ echtzeit.Transport = echtzeit.extend(echtzeit.Class({
                 for (var i = 0, n = responses.length; i < n; i++)
                         this._client.receiveMessage(responses[i]);
         },
-        
+        handleError: function(envelopes, immediate) {
+                var n = envelopes.length;
+                while (n--) envelopes[n].setDeferredStatus('failed', immediate);
+        },
         _getCookies: function() {
                 var cookies = this._client.cookies;
                 if (!cookies) return '';
@@ -100,5 +110,6 @@ echtzeit.Transport = echtzeit.extend(echtzeit.Class({
         },
         _transports: []
 });
+
 echtzeit.extend(echtzeit.Transport.prototype, echtzeit.Logging);
 echtzeit.extend(echtzeit.Transport.prototype, echtzeit.Timeouts);

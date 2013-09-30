@@ -20,6 +20,7 @@ core = [
         "protocol/grammar.js",
         "protocol/extensible.js",
         "protocol/channel.js",
+        "protocol/envelope.js",
         "protocol/publication.js",
         "protocol/subscription.js",
         "protocol/client.js",
@@ -43,6 +44,7 @@ node = [
 
 browser = [
         "util/browser/event.js",
+        "util/browser/json2.js",
         "transport/web_socket.js",
         "transport/event_source.js",
         "transport/xhr.js",

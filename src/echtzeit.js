@@ -28,8 +28,11 @@ var echtzeit = {
         },
 
         clientIdFromMessages: function(messages) {
-                var first = [].concat(messages)[0];
-                return first && first.clientId;
+                var connect = this.filter([].concat(messages), function(message) {
+                        return message.channel === '/meta/connect';
+                });
+
+                return connect[0] && connect[0].clientId;
         },
 
         copyObject: function(object) {
@@ -119,7 +122,9 @@ var echtzeit = {
         },
 
         toJSON: function(object) {
-                return JSON.stringify(object, function(key, value) {
+                if (!this.stringify) return JSON.stringify(object);
+                
+                return this.stringify(object, function(key, value) {
                         return (this[key] instanceof Array) ? this[key] : value;
                 });
         }

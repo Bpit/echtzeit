@@ -26,7 +26,7 @@ echtzeit.Transport.EventSource = echtzeit.extend(echtzeit.Class(echtzeit.Transpo
                         };
 
                         socket.onmessage = function(event) {
-                                self.receive(JSON.parse(event.data));
+                                self.receive([], JSON.parse(event.data));
                         };
 
                         this._socket = socket;
@@ -48,12 +48,12 @@ echtzeit.Transport.EventSource = echtzeit.extend(echtzeit.Class(echtzeit.Transpo
                                 });
                 },
 
-                encode: function(messages) {
-                        return this._xhr.encode(messages);
+                encode: function(envelopes) {
+                        return this._xhr.encode(envelopes);
                 },
                 
-                request: function(messages) {
-                        this._xhr.request(messages);
+                request: function(envelopes) {
+                        this._xhr.request(envelopes);
                 }
         }), {
         isUsable: function(client, endpoint, callback, context) {

@@ -56,7 +56,7 @@ You can do the plain same on the server:
 Changelog
 ------------
 
-### 1.4.4 / Coexistence
+### 1.4.5 / Collateral Existence
 
 * Allow clients to be instantiated with URI objects rather than strings
 * Add a `ca` option to the Node `Client` class for passing in trusted server certificates
@@ -80,7 +80,6 @@ Changelog
 * Remove the `listen()` method from `Adapter` in favour of using server-specific APIs
 * Stop the server from forwarding the `clientId` property of published messages
 
-* Remove json2; users should include it themselves if necessary
 * Support Browserify by returning the client module
 * `echtzeit.logger` can now be a logger object rather than a function
 

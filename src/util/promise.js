@@ -2,6 +2,7 @@
         'use strict';
 
         var defer, timeout = setTimeout;
+
         if (typeof setImmediate === 'function')
                 defer = setImmediate;
         else if (typeof process === 'object' && process.nextTick)
@@ -11,91 +12,105 @@
                         timeout(fn, 0)
                 };
 
-        var PENDING = 0,
+        var     PENDING = 0,
                 FULFILLED = 1,
                 REJECTED = 2;
 
         var FORWARD = function (x) {
                 return x
-        },
-                BREAK = function (x) {
-                        throw x
-                };
+        },  BREAK = function (x) {
+                throw x
+        };
 
         var Promise = function (task) {
                 this._state     = PENDING;
                 this._callbacks = [];
                 this._errbacks  = [];
 
-                if (typeof task !== 'function') return;
+                if (typeof task !== 'function')
+                        return void 0;
+                
                 var self = this;
 
                 task(function (value) {
-                                fulfill(self, value)
-                        },
-                        function (reason) {
-                                reject(self, reason)
-                        });
+                        fulfill(self, value)
+                }, function (reason) {
+                        reject(self, reason)
+                });
         };
 
         Promise.prototype.then = function (callback, errback) {
                 var self = this;
+
                 return new Promise(function (fulfill, reject) {
                         var next = {
                                 fulfill: fulfill,
                                 reject: reject
                         };
+                
                         registerCallback(self, callback, next);
                         registerErrback(self, errback, next);
                 });
         };
 
         var registerCallback = function (promise, callback, next) {
-                if (typeof callback !== 'function') callback = FORWARD;
+                if (typeof callback !== 'function')
+                        callback = FORWARD;
+                
                 var handler = function (value) {
                         invoke(callback, value, next)
                 };
+
                 if (promise._state === PENDING) {
                         promise._callbacks.push(handler);
                 } else if (promise._state === FULFILLED) {
-                        handler(promise._value);
+                        defer(function() {
+                                handler(promise._value)
+                        });
                 }
         };
 
         var registerErrback = function (promise, errback, next) {
-                if (typeof errback !== 'function') errback = BREAK;
+                if (typeof errback !== 'function')
+                        errback = BREAK;
+                
                 var handler = function (reason) {
                         invoke(errback, reason, next)
                 };
+
                 if (promise._state === PENDING) {
                         promise._errbacks.push(handler);
                 } else if (promise._state === REJECTED) {
-                        handler(promise._reason);
+                        defer(function() {
+                                handler(promise._reason)
+                        });
                 }
         };
 
         var invoke = function (fn, value, next) {
-                defer(function () {
-                        try {
-                                var outcome = fn(value);
-                                if (outcome && typeof outcome.then === 'function') {
-                                        outcome.then(next.fulfill, next.reject);
-                                } else {
-                                        next.fulfill(outcome);
-                                }
-                        } catch (error) {
-                                next.reject(error);
+                try {
+                        var outcome = fn(value);
+
+                        if (outcome && typeof outcome.then === 'function') {
+                                outcome.then(next.fulfill, next.reject);
+                        } else {
+                                next.fulfill(outcome);
                         }
-                });
+                } catch (error) {
+                        next.reject(error);
+                }
         };
 
         var fulfill = Promise.fulfill = function (promise, value) {
-                if (promise._state !== PENDING) return;
+                if (promise._state !== PENDING)
+                        return void 0;
+
                 promise._state    = FULFILLED;
                 promise._value    = value;
                 promise._errbacks = [];
 
                 var callbacks = promise._callbacks, cb;
+
                 while (cb = callbacks.shift()) cb(value);
         };
 
@@ -108,6 +123,8 @@
                 var errbacks = promise._errbacks, eb;
                 while (eb = errbacks.shift()) eb(reason);
         };
+
+        Promise.defer = defer;
 
         Promise.pending = function () {
                 var tuple = {};

@@ -1,9 +1,14 @@
 echtzeit.Transport.NodeLocal = echtzeit.extend(echtzeit.Class(echtzeit.Transport, {
         batching: false,
-        request: function(messages) {
+        request: function(envelopes) {
+                var messages = echtzeit.map(envelopes, function(e) {
+                        return e.message
+                });
+
                 messages = echtzeit.copyObject(messages);
+
                 this.endpoint.process(messages, true, function(responses) {
-                        this.receive(echtzeit.copyObject(responses));
+                        this.receive(envelopes, echtzeit.copyObject(responses));
                 }, this);
         }
 }), {
