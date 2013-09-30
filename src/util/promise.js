@@ -4,9 +4,9 @@
         var defer, timeout = setTimeout;
 
         if (typeof setImmediate === 'function')
-                defer = setImmediate;
+                defer = function(fn) { setImmediate(fn) };
         else if (typeof process === 'object' && process.nextTick)
-                defer = process.nextTick;
+                defer = function(fn) { process.nextTick(fn) };
         else
                 defer = function (fn) {
                         timeout(fn, 0)

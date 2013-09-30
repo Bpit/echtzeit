@@ -66,10 +66,13 @@ echtzeit.Transport.WebSocket = echtzeit.extend(echtzeit.Class(echtzeit.Transport
                         self.removeTimeout('ping');
                         self.setDeferredStatus('unknown');
 
+                        var pending = self._pending ? self._pending.toArray() : [];
+                        delete self._pending;
+
                         if (wasConnected) {
-                                if (self._pending) self.handleError(self._pending.toArray(), true);
+                                self.handleError(pending, true);
                         } else if (self._everConnected) {
-                                if (self._pending) self.handleError(self._pending.toArray());
+                                self.handleError(pending);
                         } else {
                                 self.setDeferredStatus('failed');
                         }

@@ -36,7 +36,6 @@ echtzeit.NodeAdapter = echtzeit.Class({
         },
         initialize: function(options) {
                 this._options = options || {};
-                this._origins    = this._options.origins && [].concat(this._options.origins);
                 this._endpoint = this._options.mount || this.DEFAULT_ENDPOINT;
                 this._endpointRe = new RegExp('^' + this._endpoint.replace(/\/$/, '') + '(/[^/]*)*(\\.[^\\.]+)?$');
                 this._server = new echtzeit.Server(this._options);
@@ -79,8 +78,10 @@ echtzeit.NodeAdapter = echtzeit.Class({
         handle: function(request, response) {
                 var requestUrl = url.parse(request.url, true),
                         requestMethod = request.method,
-                        origin        = request.headers.origin,
+                        origin = request.headers.origin,
                         self = this;
+
+                request.originalUrl = request.url;
 
                 request.on('error', function(error) {
                         self._returnError(response, error)
@@ -92,11 +93,6 @@ echtzeit.NodeAdapter = echtzeit.Class({
 
                 if (this._static.test(requestUrl.pathname))
                         return this._static.call(request, response);
-
-                if (this._origins && this._origins.filter(function(o) { return o.test ? o.test(origin) : o === origin }).length === 0) {
-                        response.writeHead(403, this.TYPE_TEXT);
-                        response.end('Forbidden: request origin is not authorized');
-                }
 
                 if (requestMethod === 'OPTIONS' || request.headers['access-control-request-method'] === 'POST')
                         return this._handleOptions(response);
@@ -134,15 +130,22 @@ echtzeit.NodeAdapter = echtzeit.Class({
                                 type = isGet ? this.TYPE_SCRIPT : this.TYPE_JSON,
                                 headers = echtzeit.extend({}, type),
                                 origin = request.headers.origin;
-                        if (isGet) this._server.flushConnection(message);
+
                         if (origin) headers['Access-Control-Allow-Origin'] = origin;
+
                         headers['Cache-Control'] = 'no-cache, no-store';
+                        
                         this._server.process(message, false, function(replies) {
                                 var body = JSON.stringify(replies);
-                                if (isGet) body = jsonp + '(' + this._jsonpEscape(body) + ');';
+                        
+                                if (isGet)
+                                        body = jsonp + '(' + this._jsonpEscape(body) + ');';
+                        
                                 headers['Content-Length'] = new Buffer(body, 'utf8').length.toString();
                                 headers['Connection'] = 'close';
+                                
                                 this.debug('HTTP response: ?', body);
+
                                 response.writeHead(200, headers);
                                 response.end(body);
                         }, this);
@@ -159,6 +162,8 @@ echtzeit.NodeAdapter = echtzeit.Class({
                 }),
                         clientId = null,
                         self = this;
+
+                request.originalUrl = request.url;
 
                 ws.onmessage = function(event) {
                         try {
@@ -199,11 +204,11 @@ echtzeit.NodeAdapter = echtzeit.Class({
         },
         _handleOptions: function(response) {
                 var headers = {
-                        'Access-Control-Allow-Origin':          '*',
-                        'Access-Control-Allow-Credentials':     'false',
-                        'Access-Control-Allow-Headers':         'Accept, Content-Type, Pragma, X-Requested-With',
-                        'Access-Control-Allow-Methods':         'POST, GET, PUT, DELETE, OPTIONS',
-                        'Access-Control-Max-Age':               '86400'
+                        'Access-Control-Allow-Origin': '*',
+                        'Access-Control-Allow-Credentials': 'false',
+                        'Access-Control-Allow-Headers': 'Accept, Content-Type, Pragma, X-Requested-With',
+                        'Access-Control-Allow-Methods': 'POST, GET, PUT, DELETE, OPTIONS',
+                        'Access-Control-Max-Age': '86400'
                 };
                 response.writeHead(200, headers);
                 response.end('');
@@ -228,7 +233,7 @@ echtzeit.NodeAdapter = echtzeit.Class({
         }
 });
 
-for (var method in echtzeit.Publisher) (function(method) {
+for (var method in echtzeit.Publisher)(function(method) {
         echtzeit.NodeAdapter.prototype[method] = function() {
                 return this._server._engine[method].apply(this._server._engine, arguments);
         };
