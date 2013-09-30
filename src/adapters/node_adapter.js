@@ -6,7 +6,9 @@ var crypto = require('crypto'),
         path = require('path'),
         tls = require('tls'),
         url = require('url'),
-        querystring = require('querystring');
+        querystring = require('querystring'),
+        csprng = require('csprng');
+
 echtzeit.WebSocket = require('faye-websocket');
 echtzeit.EventSource = echtzeit.WebSocket.EventSource;
 echtzeit.CookieJar = require('cookiejar').CookieJar;
@@ -137,7 +139,7 @@ echtzeit.NodeAdapter = echtzeit.Class({
                         headers['Cache-Control'] = 'no-cache, no-store';
                         this._server.process(message, false, function(replies) {
                                 var body = JSON.stringify(replies);
-                                if (isGet) body = jsonp + '(' + body.replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029') + ');';
+                                if (isGet) body = jsonp + '(' + this._jsonpEscape(body) + ');';
                                 headers['Content-Length'] = new Buffer(body, 'utf8').length.toString();
                                 headers['Connection'] = 'close';
                                 this.debug('HTTP response: ?', body);
@@ -147,6 +149,9 @@ echtzeit.NodeAdapter = echtzeit.Class({
                 } catch (error) {
                         this._returnError(response, error);
                 }
+        },
+        _jsonpEscape: function(json) {
+                return json.replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
         },
         handleUpgrade: function(request, socket, head) {
                 var ws = new echtzeit.WebSocket(request, socket, head, null, {

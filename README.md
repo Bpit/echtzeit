@@ -75,6 +75,8 @@ Changelog
 * Escape U+2028 and U+2029 in JSON-P output
 * Fix a bug stopping requests being routed when the mount point is `/`
 * Fix various bugs that cause errors to be thrown if we try to send a message over a closed socket
+
+* Use cryptographically secure random number generators to create client IDs
 * Remove the `listen()` method from `Adapter` in favour of using server-specific APIs
 * Stop the server from forwarding the `clientId` property of published messages
 

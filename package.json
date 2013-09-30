@@ -38,7 +38,8 @@
         },
         "dependencies": {
                 "cookiejar": "*",
-                "faye-websocket": "*"
+                "faye-websocket": "*",
+                "csprng": ""
         },
         "bugs": {
                 "url": "https://github.com/Legify/echtzeit/issues"
