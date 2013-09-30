@@ -6,7 +6,7 @@
         if (typeof setImmediate === 'function')
                 defer = function(fn) { setImmediate(fn) };
         else if (typeof process === 'object' && process.nextTick)
-                defer = function(fn) { process.nextTick(fn) };
+                defer = process.nextTick;
         else
                 defer = function (fn) {
                         timeout(fn, 0)
