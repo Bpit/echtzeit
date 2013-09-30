@@ -56,32 +56,50 @@ You can do the plain same on the server:
 Changelog
 ------------
 
-### 1.4.5 / Collateral Existence
+### 1.5.0 / Superposition <sup>†</sup>
 
-* Allow clients to be instantiated with URI objects rather than strings
-* Add a `ca` option to the Node `Client` class for passing in trusted server certificates
-* Objects supporting the `callback()` method in JavaScript are now Promises
-* Fix protocol-relative URI parsing in the client
-* Remove the `getClientId()` and `getState()` methods from the `Client` class
+* Client changes:
+  * Allow clients to be instantiated with URI objects rather than strings
+  * Add a `ca` option to the Node `Client` class for passing in trusted server certificates
+  * Objects supporting the `callback()` method in JavaScript are now Promises
+  * Fix protocol-relative URI parsing in the client
+  * Remove the `getClientId()` and `getState()` methods from the `Client` class
+* Transport changes:
+  * Add request-size limiting to all batching transports
+  * Make the WebSocket transport more robust against quiet network periods and clients going to sleep
+  * Support cookies across all transports when using the client on Node.js or Ruby
+  * Support custom headers in the `cross-origin-long-polling` and server-side `websocket` transports
+* Adapter changes:
+  * Add an `origins` option to the server to whitelist authorized origins
+  * Escape U+2028 and U+2029 in JSON-P output
+  * Fix a bug stopping requests being routed when the mount point is `/`
+  * Fix various bugs that cause errors to be thrown if we try to send a message over a closed socket
+  * Remove the `listen()` method from `Adapter` in favour of using server-specific APIs
+* Server changes:
+  * Use cryptographically secure random number generators to create client IDs
+  * Allow extensions to access request properties by using 3-ary methods
+  * Objects supporting the `bind()` method now implement the full `EventEmitter` API
+  * Stop the server from forwarding the `clientId` property of published messages
+* Miscellaneous:
+  * Support Browserify by returning the client module
+  * `echtzeit.logger` can now be a logger object rather than a function
 
-* Add request-size limiting to all batching transports
-* Make the WebSocket transport more robust against quiet network periods and clients going to sleep
-* Support cookies across all transports when using the client
-* Support custom headers in the `cross-origin-long-polling` and server-side `websocket` transports
+### 1.0.0 / Co-Existence
 
-* Add an `origins` option to the server to whitelist authorized origins
-* Allow extensions to access request properties by using 3-ary methods
-* Objects supporting the `bind()` method now implement the full `EventEmitter` API
-* Escape U+2028 and U+2029 in JSON-P output
-* Fix a bug stopping requests being routed when the mount point is `/`
-* Fix various bugs that cause errors to be thrown if we try to send a message over a closed socket
+* Specify ciphers for SSL on Node to mitigate the BEAST attack
+* Mitigate increased risk of socket hang-up errors in Node v0.8.20
+* Fix race condition when processing outgoing extensions in the Node server
+* Fix problem loading the client script when using `{mount: '/'}`
+* Clean up connection objects when a WebSocket is re-used with a new clientId
+* All JavaScript code now runs in strict mode
+* Select transport on handshake, instead of on client creation to allow time for `disable()` calls
+* Do not speculatively open WebSocket/EventSource connections if they are disabled
+* Gracefully handle WebSocket messages with no data on the client side
+* Close and reconnect WebSocket when onerror is fired, not just when onclose is fired
+* Fix problem with caching of EventSource connections with stale clientIds
+* Don't parse query strings when checking if a URL is same-origin or not
 
-* Use cryptographically secure random number generators to create client IDs
-* Remove the `listen()` method from `Adapter` in favour of using server-specific APIs
-* Stop the server from forwarding the `clientId` property of published messages
-
-* Support Browserify by returning the client module
-* `echtzeit.logger` can now be a logger object rather than a function
+<sup>†</sup> May mutate and evolute at any time.
 
 Issues [![Build Status](https://travis-ci.org/Legify/echtzeit.png)](https://travis-ci.org/Legify/echtzeit)
 ------------

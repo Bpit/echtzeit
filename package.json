@@ -27,7 +27,7 @@
                 "pubsub",
                 "websocket"
         ],
-        "version": "1.4.5",
+        "version": "1.5.0",
         "engines": {
                 "node": ">=0.6.0"
         },
@@ -45,8 +45,8 @@
                 "url": "https://github.com/Legify/echtzeit/issues"
         },
         "licenses": [{
-                        "type": "MIT",
-                        "url": "http://www.opensource.org/licenses/mit-license.php"
+                "type": "MIT",
+                "url": "http://www.opensource.org/licenses/mit-license.php"
         }],
         "repository": {
                 "type": "git",
