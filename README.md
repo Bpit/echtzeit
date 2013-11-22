@@ -106,6 +106,14 @@ Issues [![Build Status](https://travis-ci.org/Legify/echtzeit.png)](https://trav
 
 Feel free to open an issue if you think anything specific to this fork should be discussed. PRs are welcome. See the above notice if you have questions regarding *echtzeit*.
 
+Differences to Faye
+------------
+
+* `fireback` flag controlling behaviour whether messages are sent back to the client who emitted them
+* `client.js` is cached and piped to every client from memory, rather than reading it from disk
+* Overall performance optimizations
+* More lightweight
+
 License
 ------------
 
