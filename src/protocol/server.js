@@ -10,6 +10,10 @@ echtzeit.Server = echtzeit.Class({
                 this.info('Created new server: ?', this._options);
         },
 
+        close: function() {
+                return this._engine.close();
+        },
+        
         openSocket: function(clientId, socket) {
                 if (!clientId || !socket) return;
                 this._engine.openSocket(clientId, new echtzeit.Server.Socket(this, socket));

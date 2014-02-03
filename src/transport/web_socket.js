@@ -16,11 +16,11 @@ echtzeit.Transport.WebSocket = echtzeit.extend(echtzeit.Class(echtzeit.Transport
         },
 
         request: function(envelopes) {
+                this._pending = this._pending || new echtzeit.Set();
+                for (var i = 0, n = envelopes.length; i < n; i++) this._pending.add(envelopes[i]);
+
                 this.callback(function(socket) {
                         if (!socket) return;
-                                
-                        for (var i = 0, n = envelopes.length; i < n; i++)
-                                this._pending.add(envelopes[i]);
 
                         var messages = echtzeit.map(envelopes, function(e) {
                                 return e.message
@@ -46,7 +46,6 @@ echtzeit.Transport.WebSocket = echtzeit.extend(echtzeit.Class(echtzeit.Transport
                 socket.onopen = function() {
                         if (socket.headers) self._storeCookies(socket.headers['set-cookie']);
                         self._socket = socket;
-                        self._pending = new echtzeit.Set();
                         self._state = self.CONNECTED;
                         self._everConnected = true;
                         self._ping();
@@ -150,7 +149,7 @@ echtzeit.Transport.WebSocket = echtzeit.extend(echtzeit.Class(echtzeit.Transport
 echtzeit.extend(echtzeit.Transport.WebSocket.prototype, echtzeit.Deferrable);
 echtzeit.Transport.register('websocket', echtzeit.Transport.WebSocket);
 
-if (echtzeit.Event)
+if (echtzeit.Event && echtzeit.ENV.onbeforeunload)
         echtzeit.Event.on(echtzeit.ENV, 'beforeunload', function() {
                 echtzeit.Transport.WebSocket._unloaded = true;
         });

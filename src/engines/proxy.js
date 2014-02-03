@@ -20,9 +20,9 @@ echtzeit.Engine.Proxy = echtzeit.Class({
 
                 this.bind('close', function(clientId) {
                         var self = this;
-                        setTimeout(function() {
-                                self.closeConnection(clientId)
-                        }, 10);
+                        echtzeit.Promise.defer(function() {
+                                self.flush(clientId)
+                        });
                 }, this);
                 
                 this.debug('Created new engine: ?', this._options);
@@ -73,6 +73,10 @@ echtzeit.Engine.Proxy = echtzeit.Class({
                 this.debug('Flushing connection for ?', clientId);
                 var conn = this.connection(clientId, false);
                 if (conn) conn.flush(true);
+        },
+        close: function() {
+                for (var clientId in this._connections) this.flush(clientId);
+                this._engine.disconnect();
         },
         disconnect: function() {
                 if (this._engine.disconnect) return this._engine.disconnect();

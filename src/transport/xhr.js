@@ -27,7 +27,8 @@ echtzeit.Transport.XHR = echtzeit.extend(echtzeit.Class(echtzeit.Transport, {
                         xhr.abort()
                 };
 
-                echtzeit.Event.on(echtzeit.ENV, 'beforeunload', abort);
+                if (echtzeit.ENV.onbeforeunload)
+                        echtzeit.Event.on(echtzeit.ENV, 'beforeunload', abort);
 
                 xhr.onreadystatechange = function() {
                         if (!xhr || xhr.readyState !== 4) return;
@@ -37,7 +38,9 @@ echtzeit.Transport.XHR = echtzeit.extend(echtzeit.Class(echtzeit.Transport, {
                                 text = xhr.responseText,
                                 successful = (status >= 200 && status < 300) || status === 304 || status === 1223;
 
-                        echtzeit.Event.detach(echtzeit.ENV, 'beforeunload', abort);
+                        if (echtzeit.ENV.onbeforeunload)
+                                echtzeit.Event.detach(echtzeit.ENV, 'beforeunload', abort);
+
                         xhr.onreadystatechange = function() {};
                         xhr = null;
 
