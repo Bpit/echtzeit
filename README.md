@@ -56,7 +56,14 @@ You can do the plain same on the server:
 Changelog
 ------------
 
-### 1.5.0 / Superposition <sup>†</sup>
+### 1.5.1 [Faye/1.0.1] / Superposition (II) <sup>†</sup>
+
+* Add `Adapter#close()` method for gracefully shutting down the server
+* Fix error recover bug in WebSocket that made transport cycle through `up`/`down` state
+* Update Promise implementation to pass `promises-aplus-tests 2.0`
+* Add `concat-stream` for collecting request data over stream
+
+### 1.5.0 / Superposition
 
 * Client changes:
   * Allow clients to be instantiated with URI objects rather than strings

@@ -27,7 +27,7 @@
                 "pubsub",
                 "websocket"
         ],
-        "version": "1.5.0",
+        "version": "1.5.1",
         "engines": {
                 "node": ">=0.6.0"
         },
